@@ -216,8 +216,12 @@ export default function ProfilePage() {
           className="mt-4 overflow-hidden rounded-[28px] bg-[#1C1C1E]"
         >
           {identityRows.map((row, index) => (
-            <div
+            <motion.div
               key={row.label}
+              initial={{ opacity: 0, x: -12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.15 + index * 0.06 }}
               className={`flex min-h-[64px] items-center gap-3 px-4 py-3 ${
                 index < identityRows.length - 1 ? "border-b border-white/5" : ""
               }`}
@@ -233,7 +237,7 @@ export default function ProfilePage() {
                   {row.value}
                 </span>
               </span>
-            </div>
+            </motion.div>
           ))}
         </motion.section>
 
@@ -246,32 +250,39 @@ export default function ProfilePage() {
           className="mt-4 overflow-hidden rounded-[28px] bg-[#1C1C1E]"
         >
           {actionRows.map((row, index) => (
-            <Link
+            <motion.div
               key={row.label}
-              href={row.label === "AI rebalancing" ? "/ai" : "#"}
-              className={`flex min-h-[64px] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD] ${
-                index < actionRows.length - 1 ? "border-b border-white/5" : ""
-              }`}
+              initial={{ opacity: 0, x: -12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.2 + index * 0.06 }}
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 text-[#8F89FF]">
-                <Icon icon={row.icon} aria-hidden="true" width={20} height={20} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-white">
-                  {row.label}
+              <Link
+                href={row.label === "AI rebalancing" ? "/ai" : "#"}
+                className={`flex min-h-[64px] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD] ${
+                  index < actionRows.length - 1 ? "border-b border-white/5" : ""
+                }`}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 text-[#8F89FF]">
+                  <Icon icon={row.icon} aria-hidden="true" width={20} height={20} />
                 </span>
-                <span className="mt-0.5 block truncate text-xs font-medium text-[#9A9AA2]">
-                  {row.value}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-white">
+                    {row.label}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs font-medium text-[#9A9AA2]">
+                    {row.value}
+                  </span>
                 </span>
-              </span>
-              <Icon
-                icon="lucide:chevron-right"
-                aria-hidden="true"
-                width={20}
-                height={20}
-                className="text-[#66666D]"
-              />
-            </Link>
+                <Icon
+                  icon="lucide:chevron-right"
+                  aria-hidden="true"
+                  width={20}
+                  height={20}
+                  className="text-[#66666D]"
+                />
+              </Link>
+            </motion.div>
           ))}
         </motion.section>
 

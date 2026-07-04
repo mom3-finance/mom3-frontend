@@ -21,11 +21,21 @@ export default function History() {
   return (
     <main className="min-h-screen w-full bg-black font-sans text-white antialiased">
       <div className="mx-auto flex min-h-screen w-full flex-col px-5 pb-28 pt-4 sm:max-w-md">
-        <header className="relative flex h-12 items-center justify-center">
+        <motion.header
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="relative flex h-12 items-center justify-center"
+        >
           <h1 className="text-xl font-bold text-white">History</h1>
-        </header>
+        </motion.header>
 
-        <section className="mt-5 rounded-[28px] bg-[#1C1C1E] p-2">
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="mt-5 rounded-[28px] bg-[#1C1C1E] p-2"
+        >
           <div className="grid grid-cols-3 gap-1">
                 {historyTabs.map((tab) => {
               const isActive = tab.id === activeTab;
@@ -47,7 +57,7 @@ export default function History() {
               );
             })}
           </div>
-        </section>
+        </motion.section>
 
         <section className="mt-5">
           <div className="flex items-end justify-between">
@@ -133,7 +143,12 @@ export default function History() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[28px] bg-[#1C1C1E] px-6 text-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[28px] bg-[#1C1C1E] px-6 text-center"
+                >
                   <Icon
                     icon="material-symbols:history-2"
                     aria-hidden="true"
@@ -147,7 +162,7 @@ export default function History() {
                   <p className="mt-1 text-sm font-medium text-[#9A9AA2]">
                     New activity will appear here.
                   </p>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           </AnimatePresence>

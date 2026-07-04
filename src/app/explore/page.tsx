@@ -185,7 +185,12 @@ export default function ExplorePage() {
   return (
     <main className="min-h-screen w-full bg-black font-sans text-white antialiased">
       <div className="mx-auto flex min-h-screen w-full flex-col px-5 pb-28 pt-4 sm:max-w-md">
-        <header className="relative flex h-12 items-center justify-center">
+        <motion.header
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="relative flex h-12 items-center justify-center"
+        >
           <Link
             href="/dashboard"
             aria-label="Back to dashboard"
@@ -199,7 +204,7 @@ export default function ExplorePage() {
             />
           </Link>
           <h1 className="text-xl font-bold text-white">Explore</h1>
-        </header>
+        </motion.header>
 
         <motion.section
           initial={{ opacity: 0, y: 16 }}
@@ -276,7 +281,12 @@ export default function ExplorePage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-7 z-40 flex justify-center px-5">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.2 }}
+        className="fixed inset-x-0 bottom-7 z-40 flex justify-center px-5"
+      >
         <label htmlFor="explore-search" className="sr-only">
           Search lending markets
         </label>
@@ -298,7 +308,7 @@ export default function ExplorePage() {
             className="min-w-0 flex-1 bg-transparent text-base font-bold text-white placeholder:text-[#9A9AA2] focus:outline-none"
           />
         </div>
-      </div>
+      </motion.div>
     </main>
   );
 }

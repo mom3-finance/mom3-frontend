@@ -87,7 +87,7 @@ export default function Dashboard() {
           </button>
         </header>
 
-        <section className="relative mt-5 overflow-hidden rounded-[28px] bg-[#D4FF00] p-5 text-center shadow-[0_12px_40px_-12px_rgba(212,255,0,0.35)]">
+        <section className="relative mt-5 overflow-hidden rounded-[28px] bg-[#3B33BD] p-5 text-center shadow-[0_12px_40px_-12px_rgba(59,51,189,0.35)]">
           <Image
             src="/shadow.png"
             alt=""
@@ -100,12 +100,12 @@ export default function Dashboard() {
           <div className="pointer-events-none absolute -left-16 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[#3B33BD]/15 blur-[52px]" />
 
           <div className="relative z-10">
-            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-black/75">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-[#ccff00]/75">
               <span>Total Balance</span>
               <button
                 type="button"
                 onClick={() => setBalanceHidden((value) => !value)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/80 transition-colors hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-[#3B33BD]/30"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[#ccff00]/80 transition-colors hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-[#3B33BD]/30"
                 aria-label={balanceHidden ? "Show balance" : "Hide balance"}
               >
                 {balanceHidden ? (
@@ -116,7 +116,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <p className="mt-0.5 text-4xl font-bold tracking-tight text-black">
+            <p className="mt-0.5 text-4xl font-bold tracking-tight text-[#ccff00]">
               {!mounted ? "****" : balanceHidden ? (
                 "****"
               ) : (
@@ -130,19 +130,19 @@ export default function Dashboard() {
               className={cn(
                 "mt-1 flex items-center justify-center gap-2 text-xs font-semibold",
                 !mounted || balanceHidden
-                  ? "text-black/60"
+                  ? "text-[#ccff00]/60"
                   : hasAssets
-                    ? "text-[#15803d]"
-                    : "text-[#b91c1c]"
+                    ? "text-[#ccff00]"
+                    : "text-[#ccff00]/60"
               )}
             >
               <span>{!mounted || balanceHidden ? "****" : (hasAssets ? "+$42.30" : "-$00.675")}</span>
-              <span className={cn("rounded-md px-1.5 py-0.5", !mounted || balanceHidden ? "bg-black/10" : hasAssets ? "bg-[#15803d]/15" : "bg-[#b91c1c]/15")}>
+              <span className={cn("rounded-md px-1.5 py-0.5", !mounted || balanceHidden ? "bg-black/10" : hasAssets ? "bg-[#ccff00]/15" : "bg-white/10")}>
                 {!mounted || balanceHidden ? "***" : (hasAssets ? "+1.72%" : "-100%")}
               </span>
             </p>
 
-            <p className="mt-2 text-sm font-medium leading-snug text-black/80">
+            <p className="mt-2 text-sm font-medium leading-snug text-[#ccff00]/80">
               {hasAssets
                 ? "Your portfolio is growing today."
                 : <>Add your assets to start<br />using mom3</>}
@@ -154,7 +154,7 @@ export default function Dashboard() {
                   href="#"
                   className="flex flex-col items-center justify-center gap-2 rounded-[18px] transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#ccff00]/60"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#3B33BD] text-[#ccff00]">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ccff00] text-[#3B33BD]">
                     <ArrowDown className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
                   </span>
                   <span className="text-xs font-semibold text-white">Deposit</span>
@@ -181,7 +181,7 @@ export default function Dashboard() {
             ) : (
               <button
                 type="button"
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#3B33BD] px-7 py-3 text-base font-black text-[#ccff00] shadow-[0_8px_24px_-8px_rgba(59,51,189,0.45)] transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#3B33BD]/70"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ccff00] px-7 py-3 text-base font-black text-[#3B33BD] shadow-[0_8px_24px_-8px_rgba(204,255,0,0.45)] transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#ccff00]/70"
               >
                 <ArrowDown className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
                 Deposit

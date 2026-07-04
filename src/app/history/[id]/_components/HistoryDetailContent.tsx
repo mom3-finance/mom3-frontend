@@ -72,8 +72,11 @@ export default function HistoryDetailContent({ item }: { item: HistoryItem }) {
             ["Reference", item.reference],
             ["Time", item.time],
           ].map(([label, value], index) => (
-            <div
+            <motion.div
               key={label}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.15 + index * 0.06 }}
               className={cn(
                 "flex min-h-14 items-center justify-between gap-4 px-4 py-3",
                 index < 3 && "border-b border-white/5"
@@ -83,7 +86,7 @@ export default function HistoryDetailContent({ item }: { item: HistoryItem }) {
               <span className="min-w-0 truncate text-right text-sm font-bold text-white">
                 {value}
               </span>
-            </div>
+            </motion.div>
           ))}
         </motion.section>
       </div>
