@@ -116,7 +116,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <p className="mt-0.5 text-4xl font-bold tracking-tight text-black">
+            <p className="mt-0.5 text-4xl font-bold tracking-tight text-white">
               {!mounted ? "****" : balanceHidden ? (
                 "****"
               ) : (

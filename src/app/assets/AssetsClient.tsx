@@ -290,7 +290,7 @@ export default function AssetsClient() {
       ? { label: "View AI Strategy", href: "/ai/strategy", icon: "lucide:arrow-right" }
       : activeTab === "summary"
         ? { label: "Rebalance Portfolio", href: "/ai", icon: "solar:stars-bold" }
-        : { label: "Add Assets", href: "#", icon: "lucide:arrow-down" };
+        : { label: "Add Assets", href: "#", icon: "lucide:plus" };
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -310,8 +310,8 @@ export default function AssetsClient() {
           <p className="text-4xl font-bold tracking-tight text-white">
             <span className="align-top text-xl">$</span>2,500.00
           </p>
-          <div className="relative mx-auto mt-4 flex h-28 w-56 items-end justify-center">
-            <svg viewBox="0 0 200 110" className="h-28 w-56">
+          <div className="relative mx-auto mt-4 flex h-32 w-56 items-end justify-center">
+            <svg viewBox="0 0 200 120" className="h-32 w-56">
               <defs>
                 <linearGradient id="gauge-red" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#FF4444" />
@@ -345,11 +345,10 @@ export default function AssetsClient() {
                 strokeLinecap="round"
               />
               <circle cx="100" cy="100" r="5" fill="white" />
+
+              <text x="100" y="120" textAnchor="middle" className="fill-white text-[22px] font-black">86</text>
+              <text x="100" y="120" textAnchor="middle" className="fill-[#8F8F96] text-[13px] font-semibold" dy="14">/ 100 health</text>
             </svg>
-            <div className="absolute bottom-1 flex flex-col items-center">
-              <span className="text-xl font-black tracking-tight text-white">86</span>
-              <span className="text-[11px] font-semibold text-[#8F8F96]">/ 100 health</span>
-            </div>
           </div>
         </section>
 
