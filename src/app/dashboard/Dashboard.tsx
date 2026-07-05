@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { FloatingMenuButton } from "@/components/ui/menu-button";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,11 @@ function DegenDogeIcon({ className }: { className?: string }) {
   );
 }
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0 },
+};
+
 const portfolioModes = [
   {
     label: "Degen",
@@ -105,7 +111,13 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen w-full bg-black font-sans text-white antialiased">
       <div className="mx-auto flex min-h-screen w-full flex-col px-5 pt-4 pb-28 sm:max-w-md">
-        <header className="flex items-center justify-between">
+        <motion.header
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="flex items-center justify-between"
+        >
           <div className="flex items-center gap-2.5">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#3B33BD] via-[#5A52D4] to-[#7E78EA]" />
             <div>
@@ -136,9 +148,15 @@ export default function Dashboard() {
             USD
             <ChevronDown className="h-3.5 w-3.5 text-[#9A9AA2]" aria-hidden="true" />
           </button>
-        </header>
+        </motion.header>
 
-        <section className="relative mt-5 overflow-hidden rounded-[28px] bg-[#3B33BD] p-5 text-center shadow-[0_12px_40px_-12px_rgba(59,51,189,0.35)]">
+        <motion.section
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
+          className="relative mt-5 overflow-hidden rounded-[28px] bg-[#3B33BD] p-5 text-center shadow-[0_12px_40px_-12px_rgba(59,51,189,0.35)]"
+        >
           <Image
             src="/shadow.png"
             alt=""
@@ -239,9 +257,15 @@ export default function Dashboard() {
               </button>
             )}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="mt-4 rounded-[24px] border border-white/10 bg-[#1C1C1E] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <motion.section
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ duration: 0.5, delay: 0.16, ease: "easeOut" }}
+          className="mt-4 rounded-[24px] border border-white/10 bg-[#1C1C1E] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-semibold text-white">Strategy mode</h2>
@@ -259,10 +283,11 @@ export default function Dashboard() {
               const isActive = index === activeModeIndex;
 
               return (
-                <button
+                <motion.button
                   key={mode.label}
                   type="button"
                   onClick={() => setActiveModeIndex(index)}
+                  whileTap={{ scale: 0.96 }}
                   className={cn(
                     "flex h-10 items-center justify-center gap-1.5 rounded-full text-xs font-black transition-all duration-500 focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
                     isActive
@@ -276,13 +301,16 @@ export default function Dashboard() {
                     <Icon icon={mode.icon} aria-hidden="true" width={15} height={15} />
                   )}
                   {mode.label}
-                </button>
+                </motion.button>
               );
             })}
           </div>
 
-          <div
+          <motion.div
             key={activeMode.label}
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
             className="mt-3 rounded-[20px] border border-white/10 bg-[linear-gradient(115deg,#17181d_0%,#111216_100%)] p-3 transition-all duration-700"
           >
             <div className="flex items-start gap-3">
@@ -305,11 +333,20 @@ export default function Dashboard() {
                 {activeMode.tone}
               </span>
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="mt-4 grid grid-cols-2 gap-2.5">
-          <div className="rounded-[22px] bg-[#1C1C1E] p-3.5 transition-all duration-500 hover:-translate-y-0.5 hover:bg-[#202024] active:scale-95">
+        <motion.section
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ duration: 0.5, delay: 0.24, ease: "easeOut" }}
+          className="mt-4 grid grid-cols-2 gap-2.5"
+        >
+          <motion.div
+            whileTap={{ scale: 0.97 }}
+            className="rounded-[22px] bg-[#1C1C1E] p-3.5 transition-all duration-500 hover:-translate-y-0.5 hover:bg-[#202024]"
+          >
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2A2A3E] text-[#ccff00] transition-transform duration-500 hover:rotate-6">
                 <Sprout className="h-4 w-4" aria-hidden="true" />
@@ -323,9 +360,12 @@ export default function Dashboard() {
               With optimal yield
             </p>
             <AvatarStack label="12k+ user earning" />
-          </div>
+          </motion.div>
 
-          <div className="rounded-[22px] bg-[#1C1C1E] p-3.5 transition-all duration-500 hover:-translate-y-0.5 hover:bg-[#202024] active:scale-95">
+          <motion.div
+            whileTap={{ scale: 0.97 }}
+            className="rounded-[22px] bg-[#1C1C1E] p-3.5 transition-all duration-500 hover:-translate-y-0.5 hover:bg-[#202024]"
+          >
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2A2A3E] text-[#ccff00] transition-transform duration-500 hover:rotate-6">
                 <Coins className="h-4 w-4" aria-hidden="true" />
@@ -341,10 +381,16 @@ export default function Dashboard() {
               With flexible rates
             </p>
             <AvatarStack label="12k+ user borrowing" />
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="mt-6">
+        <motion.section
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ duration: 0.5, delay: 0.32, ease: "easeOut" }}
+          className="mt-6"
+        >
           <h2 className="text-base font-semibold text-white">Earn with mom3</h2>
 
           <div className="mt-3 space-y-3">
@@ -387,7 +433,7 @@ export default function Dashboard() {
               <ChevronRight className="h-5 w-5 shrink-0 text-white" aria-hidden="true" />
             </Link>
           </div>
-        </section>
+        </motion.section>
         <div className="flex-1" />
       </div>
       <FloatingMenuButton activeHref="/dashboard" />
