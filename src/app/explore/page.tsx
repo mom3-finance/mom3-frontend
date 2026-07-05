@@ -329,6 +329,7 @@ function MarketDetail({
           values={market.chartData[range]}
           label={`${market.category} market trend`}
           tone={tone}
+          range={range}
           className="mt-3"
         />
       </div>

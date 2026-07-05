@@ -24,7 +24,9 @@ type MiniChartProps = {
   values: number[];
   label: string;
   tone?: "green" | "purple" | "yellow" | "red";
+  range?: TimeRange;
   defaultView?: ChartView;
+  compact?: boolean;
   className?: string;
 };
 
@@ -50,31 +52,40 @@ function formatDelta(values: number[]) {
   return `${delta >= 0 ? "+" : "-"}${Math.abs(delta).toFixed(2)}%`;
 }
 
+const rangeLabels: Record<TimeRange, string[]> = {
+  "1D": ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "Now"],
+  "1W": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  "1M": ["W1", "W2", "W3", "W4", "W5", "W6", "Now"],
+  "1Y": ["Jan", "Mar", "May", "Jul", "Sep", "Nov", "Now"],
+};
+
 export function MiniChart({
   values,
   label,
   tone = "green",
+  range = "1W",
   defaultView = "line",
+  compact = false,
   className,
 }: MiniChartProps) {
   const [view, setView] = React.useState<ChartView>(defaultView);
   const data = React.useMemo(
     () =>
       values.map((value, index) => ({
-        label: `${index + 1}`,
+        label: rangeLabels[range][index] ?? `${index + 1}`,
         value,
       })),
-    [values],
+    [range, values],
   );
 
   const color = chartColor[tone];
 
   return (
-    <div className={cn("rounded-[24px] border border-white/10 bg-[#0D0E13] p-3", className)}>
+    <div className={cn("rounded-[22px] border border-white/10 bg-[#0D0E13] p-3", className)}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-[#8F8F99]">{label}</p>
-          <p className={cn("mt-1 text-lg font-black", toneClassName[tone])}>
+          <p className="text-[11px] font-bold uppercase text-[#8F8F99]">{label}</p>
+          <p className={cn("mt-0.5 font-black", compact ? "text-base" : "text-lg", toneClassName[tone])}>
             {formatDelta(values)}
           </p>
         </div>
@@ -86,7 +97,7 @@ export function MiniChart({
               type="button"
               onClick={() => setView(item)}
               className={cn(
-                "h-8 min-w-12 rounded-full px-3 text-[11px] font-black capitalize transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
+                "h-7 min-w-11 rounded-full px-2.5 text-[10px] font-black capitalize transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
                 view === item
                   ? "bg-[#3B33BD] text-[#ccff00]"
                   : "text-[#8F8F99] hover:text-white",
@@ -98,16 +109,17 @@ export function MiniChart({
         </div>
       </div>
 
-      <div className="mt-3 h-48 w-full">
+      <div className={cn("mt-2 w-full", compact ? "h-28" : "h-40")}>
         <ResponsiveContainer width="100%" height="100%">
           {view === "line" ? (
-            <LineChart data={data} margin={{ top: 12, right: 8, bottom: 4, left: -20 }}>
+            <LineChart data={data} margin={{ top: 10, right: 6, bottom: 0, left: -22 }}>
               <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
               <XAxis
                 dataKey="label"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#77777f", fontSize: 11, fontWeight: 700 }}
+                interval={compact ? 1 : 0}
+                tick={{ fill: "#77777f", fontSize: 10, fontWeight: 700 }}
               />
               <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
               <Tooltip
@@ -119,7 +131,7 @@ export function MiniChart({
                   color: "#fff",
                 }}
                 formatter={(value) => [`${Number(value).toFixed(2)}%`, "Change"]}
-                labelFormatter={(value) => `Point ${value}`}
+                labelFormatter={(value) => `${range} • ${value}`}
               />
               <Line
                 type="monotone"
@@ -131,13 +143,14 @@ export function MiniChart({
               />
             </LineChart>
           ) : (
-            <BarChart data={data} margin={{ top: 12, right: 8, bottom: 4, left: -20 }}>
+            <BarChart data={data} margin={{ top: 10, right: 6, bottom: 0, left: -22 }}>
               <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
               <XAxis
                 dataKey="label"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#77777f", fontSize: 11, fontWeight: 700 }}
+                interval={compact ? 1 : 0}
+                tick={{ fill: "#77777f", fontSize: 10, fontWeight: 700 }}
               />
               <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
               <Tooltip
@@ -149,7 +162,7 @@ export function MiniChart({
                   color: "#fff",
                 }}
                 formatter={(value) => [`${Number(value).toFixed(2)}%`, "Change"]}
-                labelFormatter={(value) => `Point ${value}`}
+                labelFormatter={(value) => `${range} • ${value}`}
               />
               <Bar dataKey="value" fill={color} radius={[8, 8, 3, 3]} />
             </BarChart>

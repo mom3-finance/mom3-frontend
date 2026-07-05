@@ -367,6 +367,7 @@ function AssetDetailPanel({
           values={asset.chartData[range]}
           label={`${asset.symbol} performance`}
           tone={tone}
+          range={range}
           className="mt-3"
         />
       </div>
@@ -416,6 +417,7 @@ function DetailPanel({
           values={position.chartData[range]}
           label={`${position.protocol} position trend`}
           tone={chartTone}
+          range={range}
           className="mt-3"
         />
       </div>
@@ -701,44 +703,50 @@ export default function AssetsClient() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.25 }}
-              className="mt-4 space-y-4"
+              className="mt-4 space-y-3"
             >
-              <div className="rounded-[24px] border border-white/10 bg-[#111217] p-4">
+              <div className="rounded-[22px] border border-white/10 bg-[#111217] p-3.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-[#A7A7B7]">Portfolio Health</p>
-                    <p className="mt-1 text-3xl font-black text-[#ccff00]">86</p>
+                    <p className="text-xs font-medium text-[#A7A7B7]">Portfolio Health</p>
+                    <p className="mt-1 text-2xl font-black text-[#ccff00]">86</p>
                   </div>
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#ccff00]/10 text-[#ccff00]">
-                    <Icon icon="solar:shield-check-bold" className="h-8 w-8" aria-hidden="true" />
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ccff00]/10 text-[#ccff00]">
+                    <Icon icon="solar:shield-check-bold" className="h-6 w-6" aria-hidden="true" />
                   </span>
                 </div>
-                <p className="mt-4 text-sm font-medium leading-relaxed text-[#A7A7B7]">
+                <p className="mt-3 text-xs font-medium leading-relaxed text-[#A7A7B7]">
                   Portfolio is healthy with stablecoin-heavy exposure. AI suggests reducing
                   experimental yield and moving part of it into Aave or Morpho lending.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <TimeRangeControl value={positionRange} onChange={setPositionRange} />
+                <MiniChart
+                  values={selectedPosition.chartData[positionRange]}
+                  label="Portfolio trend"
+                  tone="green"
+                  range={positionRange}
+                  compact
+                  className="mt-2.5"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   ["Net APY", "5.92%", "After fees"],
                   ["Risk Level", "Low", "Stable weighted"],
                   ["Borrow Usage", "28%", "Safe range"],
                   ["Rebalance", "7 days", "Auto check"],
                 ].map(([label, value, helper]) => (
-                  <div key={label} className="rounded-[20px] border border-white/10 bg-[#111217] p-3">
+                  <div key={label} className="rounded-[18px] border border-white/10 bg-[#111217] p-2.5">
                     <p className="text-xs font-medium text-[#A7A7B7]">{label}</p>
-                    <p className="mt-2 text-xl font-black text-white">{value}</p>
-                    <p className="mt-1 text-xs font-semibold text-[#8F8F96]">{helper}</p>
+                    <p className="mt-1.5 text-lg font-black text-white">{value}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[#8F8F96]">{helper}</p>
                   </div>
                 ))}
               </div>
-
-              <DetailPanel
-                position={selectedPosition}
-                range={positionRange}
-                onRangeChange={setPositionRange}
-              />
             </motion.section>
           ) : null}
         </AnimatePresence>

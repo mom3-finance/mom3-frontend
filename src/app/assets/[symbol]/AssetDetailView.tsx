@@ -26,14 +26,14 @@ export default function AssetDetailView({ asset }: { asset: AssetDetail }) {
           <h1 className="text-xl font-bold text-white">{asset.symbol}</h1>
         </header>
 
-        <section className="mt-6">
+        <section className="mt-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.08]">
-              <Icon icon={asset.icon} className="h-9 w-9" aria-hidden="true" />
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.08]">
+              <Icon icon={asset.icon} className="h-8 w-8" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-black text-white">{asset.name}</h2>
-              <p className="mt-1 text-sm font-medium text-[#8F8F96]">
+              <h2 className="truncate text-base font-black text-white">{asset.name}</h2>
+              <p className="mt-0.5 text-xs font-medium text-[#8F8F96]">
                 {asset.amount} on {asset.chain}
               </p>
             </div>
@@ -47,53 +47,54 @@ export default function AssetDetailView({ asset }: { asset: AssetDetail }) {
             </span>
           </div>
 
-          <p className="mt-6 text-5xl font-black tracking-tight text-white">
+          <p className="mt-5 text-4xl font-black tracking-tight text-white">
             {asset.value}
           </p>
-          <p className="mt-2 text-sm font-medium leading-relaxed text-[#A7A7B7]">
+          <p className="mt-1.5 text-xs font-medium leading-relaxed text-[#A7A7B7]">
             {asset.detail}
           </p>
         </section>
 
-        <section className="mt-6">
+        <section className="mt-4">
           <TimeRangeControl value={range} onChange={setRange} />
           <MiniChart
             values={asset.chartData[range]}
             label={`${asset.symbol} market performance`}
             tone={tone}
+            range={range}
             className="mt-3"
           />
         </section>
 
-        <section className="mt-4 grid grid-cols-2 gap-3">
+        <section className="mt-3 grid grid-cols-2 gap-2.5">
           {[
             ["Price", asset.price],
             ["Avg cost", asset.avgCost],
             ["Allocation", asset.allocation],
             ["Network", asset.chain],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-[20px] border border-white/10 bg-[#111217] p-3">
+            <div key={label} className="rounded-[18px] border border-white/10 bg-[#111217] p-3">
               <p className="text-xs font-medium text-[#A7A7B7]">{label}</p>
-              <p className="mt-2 text-lg font-black text-white">{value}</p>
+              <p className="mt-1.5 text-base font-black text-white">{value}</p>
             </div>
           ))}
         </section>
 
-        <section className="mt-4 rounded-[24px] border border-white/10 bg-[#111217] p-4">
+        <section className="mt-3 rounded-[22px] border border-white/10 bg-[#111217] p-3.5">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#3B33BD]/20 text-[#ccff00]">
-              <Icon icon="solar:shield-check-bold" aria-hidden="true" width={23} height={23} />
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 text-[#ccff00]">
+              <Icon icon="solar:shield-check-bold" aria-hidden="true" width={21} height={21} />
             </span>
             <div>
-              <h2 className="text-base font-black text-white">Portfolio role</h2>
-              <p className="mt-1 text-sm font-medium text-[#A7A7B7]">
+              <h2 className="text-sm font-black text-white">Portfolio role</h2>
+              <p className="mt-1 text-xs font-medium text-[#A7A7B7]">
                 Used for deposits, yield routing, and balancing risk.
               </p>
             </div>
           </div>
         </section>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <Link
             href="/convert"
             className="flex h-12 items-center justify-center rounded-full bg-[#ccff00] text-sm font-black text-black transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#ccff00]/70"
