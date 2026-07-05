@@ -212,7 +212,7 @@ export default function FindFavesSection() {
                 </p>
               ) : null}
 
-              <div className="mt-6 flex w-full min-h-0 flex-1 max-w-5xl flex-col items-center justify-center gap-6 md:mt-8 md:flex-row md:items-center md:gap-20 lg:gap-28">
+              <div className="mt-4 flex w-full min-h-0 flex-1 max-w-5xl flex-col items-center justify-center gap-4 md:mt-8 md:flex-row md:items-center md:gap-20 lg:gap-28">
                 <div
                   ref={(el) => {
                     phoneRefs.current[idx] = el;
@@ -235,7 +235,7 @@ export default function FindFavesSection() {
                   </PhoneMock>
                 </div>
 
-                <div className="flex max-w-xs shrink-0 flex-col items-center text-center md:items-start md:text-left">
+                <div className="-mt-3 flex max-w-xs shrink-0 flex-col items-center text-center md:mt-0 md:items-start md:text-left">
                   <p className="text-center text-sm font-bold leading-relaxed text-[#0A0A0A] md:text-left md:text-base">
                     {panel.body}
                   </p>
