@@ -466,6 +466,13 @@ const tabVariants = {
   exit: { opacity: 0, y: -8 },
 };
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export default function AssetsClient() {
   const [activeTab, setActiveTab] = React.useState<Tab>("assets");
   const [selectedAsset, setSelectedAsset] = React.useState(assets[0]);
@@ -589,12 +596,6 @@ export default function AssetsClient() {
               transition={{ duration: 0.25 }}
               className="mt-4 space-y-4"
             >
-              <AssetDetailPanel
-                asset={selectedAsset}
-                range={assetRange}
-                onRangeChange={setAssetRange}
-              />
-
               <div className="overflow-hidden rounded-[24px] bg-[#1F1F21]">
                 {assets.map((asset, index) => (
                   <motion.div
@@ -603,13 +604,9 @@ export default function AssetsClient() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedAsset(asset)}
-                      className={cn(
-                        "flex min-h-[76px] w-full items-center gap-3 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
-                        selectedAsset === asset ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
-                      )}
+                    <Link
+                      href={`/assets/${slugify(asset.symbol)}`}
+                      className="flex min-h-[76px] w-full items-center gap-3 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
                     >
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/[0.08]">
                         <Icon icon={asset.icon} className="h-7 w-7" aria-hidden="true" />
@@ -633,7 +630,7 @@ export default function AssetsClient() {
                           {asset.change}
                         </span>
                       </span>
-                    </button>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
@@ -658,13 +655,9 @@ export default function AssetsClient() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPosition(position)}
-                      className={cn(
-                        "flex min-h-[80px] w-full items-center gap-3 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
-                        selectedPosition === position ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
-                      )}
+                    <Link
+                      href={`/assets/positions/${slugify(`${position.asset}-${position.protocol}-${position.kind}`)}`}
+                      className="flex min-h-[80px] w-full items-center gap-3 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
                     >
                       <PositionIcon position={position} />
                       <span className="min-w-0 flex-1">
@@ -693,16 +686,10 @@ export default function AssetsClient() {
                           {position.risk} risk
                         </span>
                       </span>
-                    </button>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
-
-              <DetailPanel
-                position={selectedPosition}
-                range={positionRange}
-                onRangeChange={setPositionRange}
-              />
             </motion.section>
           ) : null}
 

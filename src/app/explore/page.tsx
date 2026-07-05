@@ -179,16 +179,19 @@ function matchesMarket(item: MarketItem, query: string) {
   );
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function MarketList({
   title,
   items,
-  selectedMarket,
-  onSelect,
 }: {
   title: string;
   items: MarketItem[];
-  selectedMarket: MarketItem;
-  onSelect: (item: MarketItem) => void;
 }) {
   return (
     <motion.section
@@ -209,13 +212,9 @@ function MarketList({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <button
-              type="button"
-              onClick={() => onSelect(item)}
-              className={cn(
-                "flex min-h-[68px] w-full items-center gap-3 rounded-[20px] px-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
-                selectedMarket === item ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
-              )}
+            <Link
+              href={`/explore/${slugify(`${item.category}-${item.asset}-${item.protocol}`)}`}
+              className="flex min-h-[68px] w-full items-center gap-3 rounded-[20px] px-2 text-left transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
             >
               <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${item.color}`}>
                 <Icon
@@ -246,7 +245,7 @@ function MarketList({
                   {item.secondary}
                 </span>
               </span>
-            </button>
+            </Link>
           </motion.div>
         ))}
       </div>
@@ -355,8 +354,6 @@ function MarketDetail({
 
 export default function ExplorePage() {
   const [query, setQuery] = React.useState("");
-  const [selectedMarket, setSelectedMarket] = React.useState<MarketItem>(lendingPools[0]);
-  const [marketRange, setMarketRange] = React.useState<TimeRange>("1W");
 
   const filteredLending = React.useMemo(
     () => (query.trim() ? lendingPools.filter((item) => matchesMarket(item, query)) : lendingPools),
@@ -444,36 +441,24 @@ export default function ExplorePage() {
           </div>
         </motion.section>
 
-        <MarketDetail
-          market={selectedMarket}
-          range={marketRange}
-          onRangeChange={setMarketRange}
-        />
-
         {hasResults ? (
           <>
             {filteredLending.length > 0 ? (
               <MarketList
                 title="Best lend rates"
                 items={filteredLending}
-                selectedMarket={selectedMarket}
-                onSelect={setSelectedMarket}
               />
             ) : null}
             {filteredBorrow.length > 0 ? (
               <MarketList
                 title="Borrow markets"
                 items={filteredBorrow}
-                selectedMarket={selectedMarket}
-                onSelect={setSelectedMarket}
               />
             ) : null}
             {filteredRisk.length > 0 ? (
               <MarketList
                 title="Risk watch"
                 items={filteredRisk}
-                selectedMarket={selectedMarket}
-                onSelect={setSelectedMarket}
               />
             ) : null}
           </>
