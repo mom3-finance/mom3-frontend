@@ -2,7 +2,6 @@
 
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import * as React from "react";
 
 function FloatingShape({
   className,
@@ -18,30 +17,11 @@ function FloatingShape({
 }
 
 export default function OnboardingView() {
-  const [time, setTime] = React.useState("");
-
-  React.useEffect(() => {
-    const updateTime = () => {
-      setTime(
-        new Intl.DateTimeFormat("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }).format(new Date()),
-      );
-    };
-
-    updateTime();
-    const interval = window.setInterval(updateTime, 1000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
   return (
-    <main className="min-h-screen w-full overflow-hidden bg-[#6C7CFF] font-sans text-white antialiased">
+    <main className="min-h-screen w-full overflow-hidden bg-[#3B33BD] font-sans text-white antialiased">
       <div className="relative mx-auto flex min-h-screen w-full flex-col px-5 pb-7 pt-5 sm:max-w-md">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#5870F5_0%,#7B86FF_48%,#A8AEFF_100%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_18%,rgba(204,255,0,0.24),transparent_21%),radial-gradient(circle_at_82%_4%,rgba(255,230,174,0.7),transparent_24%),radial-gradient(circle_at_94%_45%,rgba(255,255,255,0.32),transparent_20%),radial-gradient(circle_at_10%_80%,rgba(22,18,35,0.34),transparent_17%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#201B8F_0%,#3B33BD_42%,#6F7CFF_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(204,255,0,0.18),transparent_22%),radial-gradient(circle_at_84%_6%,rgba(126,120,234,0.78),transparent_26%),radial-gradient(circle_at_94%_48%,rgba(59,51,189,0.62),transparent_24%),radial-gradient(circle_at_10%_82%,rgba(8,7,34,0.45),transparent_18%)]" />
 
         <FloatingShape
           className="-left-16 top-28 h-40 w-40 rotate-12"
@@ -56,12 +36,7 @@ export default function OnboardingView() {
           className="-left-20 bottom-[22%] h-32 w-32 opacity-70 blur-sm"
         />
 
-        <header className="relative z-10 flex items-center text-white">
-          <span className="sr-only">Current time</span>
-          <span className="text-base font-black tracking-wide">{time || "--:--"}</span>
-        </header>
-
-        <section className="relative z-10 mt-auto text-center">
+        <section className="relative z-10 mt-auto -translate-y-8 text-center">
           <p className="text-[52px] font-black leading-none tracking-normal text-white/90 drop-shadow-[0_12px_28px_rgba(26,28,92,0.18)]">
             mom3
           </p>
@@ -70,7 +45,7 @@ export default function OnboardingView() {
           </h1>
         </section>
 
-        <section className="relative z-10 mt-7 space-y-3">
+        <section className="relative z-10 mt-7 -translate-y-8 space-y-3">
           <Link
             href="/claim-username"
             className="flex h-12 w-full items-center justify-center gap-2.5 rounded-2xl bg-white text-base font-black text-black shadow-[0_16px_42px_-24px_rgba(14,18,58,0.7)] transition-transform active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white"
@@ -88,7 +63,7 @@ export default function OnboardingView() {
           </Link>
         </section>
 
-        <p className="relative z-10 mx-auto mt-6 max-w-xs text-center text-xs font-semibold leading-snug text-white/70">
+        <p className="relative z-10 mx-auto mt-6 max-w-xs -translate-y-8 text-center text-xs font-semibold leading-snug text-white/70">
           By signing up, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
