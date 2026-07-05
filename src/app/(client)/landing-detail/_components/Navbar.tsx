@@ -65,7 +65,7 @@ export default function Navbar() {
             <span className="relative flex items-center justify-center rounded-full px-4 py-2 text-sm font-bold text-[#0A0A0A] transition-colors hover:bg-white/20 md:px-5 md:py-2.5 md:text-base">
               /Earn
             </span>
-            <span className="relative flex items-center justify-center rounded-full bg-[#0A0A0A] px-4 py-2 text-sm font-bold text-[#ccff00] shadow-[inset_0_-3px_6px_0_rgba(255,255,255,0.18),inset_0_3px_6px_0_rgba(0,0,0,0.4),0_2px_6px_0_rgba(0,0,0,0.25)] md:px-5 md:py-2.5 md:text-base">
+            <span className="relative flex items-center justify-center rounded-full bg-[#3B33BD] px-4 py-2 text-sm font-bold text-[#ccff00] shadow-[inset_0_-3px_6px_0_rgba(255,255,255,0.16),inset_0_3px_6px_0_rgba(0,0,0,0.32),0_6px_16px_-8px_rgba(59,51,189,0.8)] md:px-5 md:py-2.5 md:text-base">
               Start
             </span>
           </Link>
