@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { positionDetails } from "@/lib/portfolio-data";
-import PositionDetailView from "./PositionDetailView";
+import PositionDetailView from "@/modules/position-detail/PositionDetailView";
 
 export function generateStaticParams() {
   return positionDetails.map((position) => ({ id: position.slug }));

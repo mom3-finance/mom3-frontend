@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import SendClient from "./SendClient";
+import SendView from "@/modules/send/SendView";
 
 export const metadata: Metadata = {
   title: "Send | Oni",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function SendPage() {
   return (
     <Suspense fallback={null}>
-      <SendClient />
+      <SendView />
     </Suspense>
   );
 }

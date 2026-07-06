@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { assetDetails } from "@/lib/portfolio-data";
-import AssetDetailView from "./AssetDetailView";
+import AssetDetailView from "@/modules/asset-detail/AssetDetailView";
 
 export function generateStaticParams() {
   return assetDetails.map((asset) => ({ symbol: asset.slug }));

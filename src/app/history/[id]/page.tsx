@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { allHistoryItems, getHistoryItemById } from "@/lib/history";
-import HistoryDetailContent from "./_components/HistoryDetailContent";
+import HistoryDetailView from "@/modules/history-detail/HistoryDetailView";
 
 type HistoryDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -41,5 +41,5 @@ export default async function HistoryDetailPage({
     notFound();
   }
 
-  return <HistoryDetailContent item={item} />;
+  return <HistoryDetailView item={item} />;
 }

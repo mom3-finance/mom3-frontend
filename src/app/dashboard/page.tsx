@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import Dashboard from "./Dashboard";
+import DashboardView from "@/modules/dashboard/DashboardView";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -20,5 +20,5 @@ export const viewport: Viewport = {
 };
 
 export default function DashboardPage() {
-  return <Dashboard />;
+  return <DashboardView />;
 }

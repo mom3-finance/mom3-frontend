@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import AiChat from "./AiChat";
+import AiChatView from "@/modules/ai/AiChatView";
 
 export const metadata: Metadata = {
   title: "AI Rebalancing | Oni",
@@ -15,5 +15,5 @@ export const viewport: Viewport = {
 };
 
 export default function AiPage() {
-  return <AiChat />;
+  return <AiChatView />;
 }

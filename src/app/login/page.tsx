@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 
-import OnboardingView from "../onboarding/OnboardingView";
+import OnboardingView from "@/modules/onboarding/OnboardingView";
 
 export const metadata: Metadata = {
   title: "Login | mom3",
@@ -11,10 +12,12 @@ export const viewport: Viewport = {
   themeColor: "#6C7CFF",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function LoginPage() {
-  return <OnboardingView />;
+  return (
+    <Suspense fallback={null}>
+      <OnboardingView />
+    </Suspense>
+  );
 }

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import History from "./History";
+import HistoryView from "@/modules/history/HistoryView";
 
 export const metadata: Metadata = {
   title: "History | Oni",
@@ -15,5 +15,5 @@ export const viewport: Viewport = {
 };
 
 export default function HistoryPage() {
-  return <History />;
+  return <HistoryView />;
 }

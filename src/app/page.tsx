@@ -1,5 +1,5 @@
 import type { Viewport } from "next";
-import LandingDetail from "./(client)/landing-detail/_components/LandingDetail";
+import LandingDetailView from "@/modules/landing-detail/LandingDetailView";
 
 export const metadata = {
   title: "mom3 | AI Wallet for Yield, Lending, and Rebalancing",
@@ -16,5 +16,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootPage() {
-  return <LandingDetail />;
+  return <LandingDetailView />;
 }

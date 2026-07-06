@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import ConvertClient from "./ConvertClient";
+import ConvertView from "@/modules/convert/ConvertView";
 
 export const metadata: Metadata = {
   title: "Convert | Oni",
@@ -15,5 +15,5 @@ export const viewport: Viewport = {
 };
 
 export default function ConvertPage() {
-  return <ConvertClient />;
+  return <ConvertView />;
 }

@@ -1,4 +1,4 @@
-import LandingDetail from "./_components/LandingDetail";
+import LandingDetailView from "@/modules/landing-detail/LandingDetailView";
 
 export const metadata = {
   title: "mom3 | AI Wallet for Yield, Lending, and Rebalancing",
@@ -7,5 +7,5 @@ export const metadata = {
 };
 
 export default function LandingDetailPage() {
-  return <LandingDetail />;
+  return <LandingDetailView />;
 }

@@ -1,4 +1,4 @@
-import AssetsClient from "./AssetsClient";
+import AssetsView from "@/modules/assets/AssetsView";
 
 export const metadata = {
   title: "Your Assets | Oni",
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function AssetsPage() {
-  return <AssetsClient />;
+  return <AssetsView />;
 }

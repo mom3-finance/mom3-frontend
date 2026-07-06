@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ServiceWorkerRegister } from "@/providers/ServiceWorkerRegister";
+import { WalletProviders } from "@/providers/WalletProviders";
 
 export const metadata: Metadata = {
   applicationName: "mom3",
@@ -29,8 +30,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#0a0a0a",
 };
 
@@ -42,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-rounded antialiased">
-        {children}
+        <WalletProviders>{children}</WalletProviders>
         <ServiceWorkerRegister />
       </body>
     </html>

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { marketDetails } from "@/lib/portfolio-data";
-import MarketDetailView from "./MarketDetailView";
+import MarketDetailView from "@/modules/market-detail/MarketDetailView";
 
 export function generateStaticParams() {
   return marketDetails.map((market) => ({ id: market.slug }));

@@ -1,4 +1,4 @@
-const CACHE_NAME = "oni-pwa-v4";
+const CACHE_NAME = "oni-pwa-v5";
 const PRECACHE_URLS = [
   "/",
   "/manifest.json",
@@ -43,6 +43,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (request.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (url.pathname.startsWith("/_next/")) {
+    event.respondWith(fetch(request));
     return;
   }
 
