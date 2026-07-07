@@ -1,0 +1,58 @@
+"use client";
+
+import { Icon } from "@iconify/react";
+import * as React from "react";
+
+import { truncateAddress } from "@/lib/wallet-session";
+import { cn } from "@/lib/utils";
+import type { Recipient } from "@/modules/send/type";
+
+export function RecipientRow({
+  recipient,
+  selected,
+  onSelect,
+}: {
+  recipient: Recipient;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "flex min-h-[74px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
+        selected && "bg-[#3B33BD]/10",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-black text-white",
+          recipient.color,
+        )}
+      >
+        {recipient.name.slice(0, 1)}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="truncate text-sm font-bold text-white">{recipient.handle}</span>
+          {recipient.status === "Verified" ? (
+            <Icon
+              icon="material-symbols:verified-rounded"
+              aria-hidden="true"
+              width={16}
+              height={16}
+              className="text-[#ccff00]"
+            />
+          ) : null}
+        </span>
+        <span className="mt-0.5 block truncate text-xs font-medium text-[#9A9AA2]">
+          {recipient.name} • {truncateAddress(recipient.address)}
+        </span>
+      </span>
+      <span className="shrink-0 rounded-full bg-black/30 px-2.5 py-1 text-[10px] font-black text-[#9A9AA2]">
+        {recipient.network}
+      </span>
+    </button>
+  );
+}

@@ -6,7 +6,7 @@ import {
   type IAssetsResponse,
 } from "@particle-network/universal-account-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BrowserProvider, Signature, getBytes } from "ethers";
+import { Signature } from "ethers";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
 import { useMagic } from "@/providers/MagicProvider";
@@ -218,9 +218,10 @@ export function UniversalAccountProvider({ children }: { children: ReactNode }) 
       }
     }
 
-    const provider = new BrowserProvider((magic as any).rpcProvider);
-    const signer = await provider.getSigner();
-    const signature = await signer.signMessage(getBytes(transaction.rootHash));
+    const signature = (await magic.rpcProvider.request({
+      method: "eth_sign",
+      params: [ownerAddress, transaction.rootHash],
+    })) as string;
 
     return universalAccountQuery.data.sendTransaction(
       transaction as any,
