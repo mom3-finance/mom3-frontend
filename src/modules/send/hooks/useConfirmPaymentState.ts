@@ -204,6 +204,7 @@ export function useConfirmPaymentState() {
     if (to) params.set("to", to);
     if (asset) params.set("asset", asset);
     if (chain) params.set("chain", chain);
+    if (amount) params.set("amount", amount);
     router.push(`/send?${params.toString()}`);
   };
 

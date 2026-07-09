@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import * as React from "react";
 
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { MobileBottomBar, MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { MiniChart, TimeRangeControl, type TimeRange } from "@/components/ui/mini-chart";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ type MarketItem = {
   description: string;
   chartData: Record<TimeRange, number[]>;
 };
+
+type MarketCategoryFilter = "All" | MarketItem["category"];
 
 const marketChartSeries: Record<string, Record<TimeRange, number[]>> = {
   stable: {
@@ -170,6 +173,61 @@ const riskWatch: MarketItem[] = [
   },
 ];
 
+const categoryFilters: Array<{
+  id: MarketCategoryFilter;
+  label: string;
+  icon: string;
+}> = [
+  { id: "All", label: "Semua", icon: "lucide:layers-3" },
+  { id: "Lend", label: "Lend", icon: "solar:wallet-money-bold" },
+  { id: "Borrow", label: "Borrow", icon: "solar:hand-money-bold" },
+  { id: "Risk", label: "Risk", icon: "solar:shield-warning-bold" },
+];
+
+const marketCategoryStyles: Record<
+  MarketItem["category"],
+  {
+    container: string;
+    row: string;
+    sectionIcon: string;
+  }
+> = {
+  Lend: {
+    container: "bg-[#1C1C1E]",
+    row: "hover:bg-[#202024] focus-visible:ring-[#ccff00]/70",
+    sectionIcon: "text-[#ccff00]",
+  },
+  Borrow: {
+    container: "bg-[#1C1C1E]",
+    row: "hover:bg-[#202024] focus-visible:ring-[#ccff00]/70",
+    sectionIcon: "text-[#ccff00]",
+  },
+  Risk: {
+    container: "bg-[#1C1C1E]",
+    row: "hover:bg-[#202024] focus-visible:ring-[#ccff00]/70",
+    sectionIcon: "text-[#ccff00]",
+  },
+};
+
+const exploreFeatureCards = [
+  {
+    title: "Lend stablecoins",
+    subtitle: "Earn up to 5.15% APY",
+    icon: "solar:wallet-money-bold",
+    className: "bg-[#1C1C1E]",
+    iconClassName: "bg-[#2A2A3E] text-[#ccff00]",
+    actionClassName: "bg-[#2A2A3E] text-[#ccff00]",
+  },
+  {
+    title: "Borrow against ETH",
+    subtitle: "Collateralized credit from 2.14% APR",
+    icon: "solar:hand-money-bold",
+    className: "bg-[#1C1C1E]",
+    iconClassName: "bg-[#2A2A3E] text-[#ccff00]",
+    actionClassName: "bg-[#2A2A3E] text-[#ccff00]",
+  },
+];
+
 function matchesMarket(item: MarketItem, query: string) {
   const normalized = query.toLowerCase();
   return (
@@ -194,6 +252,9 @@ function MarketList({
   title: string;
   items: MarketItem[];
 }) {
+  const category = items[0]?.category ?? "Lend";
+  const styles = marketCategoryStyles[category];
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -203,9 +264,15 @@ function MarketList({
     >
       <h2 className="flex items-center gap-1 text-base font-semibold text-white">
         {title}
-        <Icon icon="lucide:chevron-right" aria-hidden="true" width={17} height={17} />
+        <Icon
+          icon="lucide:chevron-right"
+          aria-hidden="true"
+          width={17}
+          height={17}
+          className={styles.sectionIcon}
+        />
       </h2>
-      <div className="mt-3 overflow-hidden rounded-[28px] bg-[#151714] p-3">
+      <div className={cn("mt-3 overflow-hidden rounded-[28px] p-3", styles.container)}>
         {items.map((item, index) => (
           <motion.div
             key={`${title}-${item.asset}`}
@@ -215,7 +282,10 @@ function MarketList({
           >
             <Link
               href={`/explore/${slugify(`${item.category}-${item.asset}-${item.protocol}`)}`}
-              className="flex min-h-[68px] w-full items-center gap-3 rounded-[20px] px-2 text-left transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
+              className={cn(
+                "flex min-h-[68px] w-full items-center gap-3 rounded-[20px] px-2 text-left transition-colors focus-visible:ring-2",
+                styles.row,
+              )}
             >
               <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${item.color}`}>
                 <Icon
@@ -356,21 +426,57 @@ function MarketDetail({
 
 export default function ExploreView() {
   const [query, setQuery] = React.useState("");
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [categoryFilter, setCategoryFilter] =
+    React.useState<MarketCategoryFilter>("All");
+
+  const showLending = categoryFilter === "All" || categoryFilter === "Lend";
+  const showBorrow = categoryFilter === "All" || categoryFilter === "Borrow";
+  const showRisk = categoryFilter === "All" || categoryFilter === "Risk";
 
   const filteredLending = React.useMemo(
-    () => (query.trim() ? lendingPools.filter((item) => matchesMarket(item, query)) : lendingPools),
-    [query]
+    () =>
+      showLending
+        ? query.trim()
+          ? lendingPools.filter((item) => matchesMarket(item, query))
+          : lendingPools
+        : [],
+    [query, showLending]
   );
   const filteredBorrow = React.useMemo(
-    () => (query.trim() ? borrowMarkets.filter((item) => matchesMarket(item, query)) : borrowMarkets),
-    [query]
+    () =>
+      showBorrow
+        ? query.trim()
+          ? borrowMarkets.filter((item) => matchesMarket(item, query))
+          : borrowMarkets
+        : [],
+    [query, showBorrow]
   );
   const filteredRisk = React.useMemo(
-    () => (query.trim() ? riskWatch.filter((item) => matchesMarket(item, query)) : riskWatch),
-    [query]
+    () =>
+      showRisk
+        ? query.trim()
+          ? riskWatch.filter((item) => matchesMarket(item, query))
+          : riskWatch
+        : [],
+    [query, showRisk]
   );
 
   const hasResults = filteredLending.length > 0 || filteredBorrow.length > 0 || filteredRisk.length > 0;
+  const selectedCategoryLabel =
+    categoryFilters.find((item) => item.id === categoryFilter)?.label ?? "Semua";
+  const headerAction = (
+    <button
+      type="button"
+      onClick={() => setFilterSheetOpen(true)}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1C1C1E] text-white transition-colors hover:bg-[#262628] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
+      aria-label="Open explore filters"
+      aria-expanded={filterSheetOpen}
+      aria-haspopup="dialog"
+    >
+      <Icon icon="lucide:sliders-horizontal" aria-hidden="true" width={18} height={18} />
+    </button>
+  );
 
   return (
     <MobileShell
@@ -412,7 +518,12 @@ export default function ExploreView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
-          <MobilePageHeader title="Explore" backHref="/dashboard" backLabel="Back to dashboard" />
+          <MobilePageHeader
+            title="Explore"
+            backHref="/dashboard"
+            backLabel="Back to dashboard"
+            action={headerAction}
+          />
         </motion.div>
 
         <motion.section
@@ -422,30 +533,29 @@ export default function ExploreView() {
           className="mt-4 overflow-hidden"
         >
           <div className="flex gap-3 overflow-x-auto pb-3">
-            {[
-              {
-                title: "Lend stablecoins",
-                subtitle: "Earn up to 5.15% APY",
-                icon: "solar:wallet-money-bold",
-              },
-              {
-                title: "Borrow against ETH",
-                subtitle: "Collateralized credit from 2.14% APR",
-                icon: "solar:hand-money-bold",
-              },
-            ].map((item, index) => (
+            {exploreFeatureCards.map((item, index) => (
               <motion.article
                 key={item.title}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="min-w-[82%] rounded-[24px] bg-[#151714] p-4"
+                className={cn("min-w-[82%] rounded-[24px] p-4", item.className)}
               >
                 <div className="flex items-start justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#242620] text-[#ccff00]">
+                  <span
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-2xl",
+                      item.iconClassName,
+                    )}
+                  >
                     <Icon icon={item.icon} aria-hidden="true" width={25} height={25} />
                   </span>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#242620]">
+                  <span
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full",
+                      item.actionClassName,
+                    )}
+                  >
                     <Icon icon="lucide:arrow-right" aria-hidden="true" width={22} height={22} />
                   </span>
                 </div>
@@ -503,6 +613,60 @@ export default function ExploreView() {
             </p>
           </motion.div>
         )}
+
+        <BottomSheet
+          open={filterSheetOpen}
+          onOpenChange={setFilterSheetOpen}
+          title="Filter"
+          description="Pilih kategori market yang ingin kamu lihat."
+          closeLabel="Close explore filters"
+          contentClassName="space-y-2"
+        >
+          {categoryFilters.map((filter) => {
+            const isActive = filter.id === categoryFilter;
+
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => {
+                  setCategoryFilter(filter.id);
+                  setFilterSheetOpen(false);
+                }}
+                className={cn(
+                  "flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl px-4 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
+                  isActive
+                    ? "bg-[#3B33BD] text-[#ccff00]"
+                    : "bg-black/25 text-white hover:bg-white/[0.04]",
+                )}
+              >
+                <span className="min-w-0 flex items-center gap-3">
+                  <Icon
+                    icon={filter.icon}
+                    aria-hidden="true"
+                    width={19}
+                    height={19}
+                    className="shrink-0"
+                  />
+                  <span className="truncate text-sm font-bold">{filter.label}</span>
+                </span>
+                {isActive ? (
+                  <Icon
+                    icon="material-symbols:check-rounded"
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    className="shrink-0"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+
+          <p className="pt-2 text-center text-xs font-bold text-[#8E8E93]">
+            Aktif: {selectedCategoryLabel}
+          </p>
+        </BottomSheet>
     </MobileShell>
   );
 }

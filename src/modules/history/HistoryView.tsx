@@ -3,10 +3,12 @@
 import { Icon } from "@iconify/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { FloatingMenuButton } from "@/components/ui/menu-button";
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
-import { historyItems, historyTabs, type HistoryItem, type HistoryTab } from "@/lib/history";
+import { historyItems, type HistoryItem } from "@/lib/history";
 import { cn } from "@/lib/utils";
 
 const toneClassName: Record<HistoryItem["tone"], string> = {
@@ -16,8 +18,52 @@ const toneClassName: Record<HistoryItem["tone"], string> = {
 };
 
 export default function HistoryView() {
-  const [activeTab, setActiveTab] = React.useState<HistoryTab>("me");
-  const activeItems = historyItems[activeTab];
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const myHistoryItems = historyItems.me;
+  const networkOptions = React.useMemo(
+    () => ["all", ...Array.from(new Set(myHistoryItems.map((item) => item.network)))],
+    [myHistoryItems],
+  );
+  const networkParam = searchParams.get("network") ?? "all";
+  const selectedNetwork = networkOptions.includes(networkParam) ? networkParam : "all";
+  const activeItems = React.useMemo(
+    () =>
+      selectedNetwork === "all"
+        ? myHistoryItems
+        : myHistoryItems.filter((item) => item.network === selectedNetwork),
+    [myHistoryItems, selectedNetwork],
+  );
+
+  const selectNetwork = (network: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (network === "all") {
+      params.delete("network");
+    } else {
+      params.set("network", network);
+    }
+
+    const query = params.toString();
+    router.replace(query ? `/history?${query}` : "/history");
+    setFilterSheetOpen(false);
+  };
+
+  const selectedNetworkLabel =
+    selectedNetwork === "all" ? "Semua" : selectedNetwork;
+
+  const networkHeaderAction = (
+    <button
+      type="button"
+      onClick={() => setFilterSheetOpen(true)}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1C1C1E] text-white transition-colors hover:bg-[#262628] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
+      aria-label="Filter by network"
+      aria-expanded={filterSheetOpen}
+      aria-haspopup="dialog"
+    >
+      <Icon icon="solar:global-bold" aria-hidden="true" width={21} height={21} />
+    </button>
+  );
 
   return (
     <MobileShell bottomSlot={<FloatingMenuButton activeHref="/history" />}>
@@ -26,46 +72,58 @@ export default function HistoryView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
-          <MobilePageHeader title="History" />
+          <MobilePageHeader title="History" action={networkHeaderAction} />
         </motion.div>
 
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          className="mt-5 rounded-[28px] bg-[#1C1C1E] p-2"
+          className="relative mt-5 flex items-center gap-2"
         >
-          <div className="grid grid-cols-3 gap-1">
-                {historyTabs.map((tab) => {
-              const isActive = tab.id === activeTab;
+          <button
+            type="button"
+            onClick={() => setFilterSheetOpen(true)}
+            className="flex h-9 max-w-36 items-center gap-1.5 rounded-full bg-[#1C1C1E] px-3 text-white transition-colors hover:bg-[#262628] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
+            aria-label="Filter by network"
+            aria-expanded={filterSheetOpen}
+            aria-haspopup="dialog"
+          >
+            <span className="truncate text-xs font-black">
+              {selectedNetworkLabel}
+            </span>
+            <Icon
+              icon="lucide:chevron-down"
+              aria-hidden="true"
+              width={14}
+              height={14}
+              className={cn(
+                "shrink-0 text-[#77777f] transition-transform",
+                filterSheetOpen && "rotate-180",
+              )}
+            />
+          </button>
 
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "h-11 rounded-full text-sm font-bold transition-colors focus-visible:ring-2 focus-visible:ring-[#ccff00]/60",
-                    isActive
-                      ? "bg-[#3B33BD] text-[#ccff00]"
-                      : "text-[#9A9AA2] hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={() => setFilterSheetOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1C1C1E] text-[#77777f] transition-colors hover:bg-[#262628] hover:text-white focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
+            aria-label="Open history filters"
+            aria-expanded={filterSheetOpen}
+            aria-haspopup="dialog"
+          >
+            <Icon icon="lucide:sliders-horizontal" aria-hidden="true" width={15} height={15} />
+          </button>
         </motion.section>
 
         <section className="mt-5">
           <div className="flex items-end justify-between">
             <div>
               <h2 className="text-base font-bold text-white">
-                {historyTabs.find((tab) => tab.id === activeTab)?.label} history
+                My history
               </h2>
               <p className="mt-1 text-sm font-medium text-[#9A9AA2]">
-                Recent activity that matters to you.
+                Recent activity from your wallet.
               </p>
             </div>
             <span className="rounded-full bg-[#1C1C1E] px-3 py-1 text-xs font-bold text-[#9A9AA2]">
@@ -75,7 +133,7 @@ export default function HistoryView() {
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeTab}
+              key={selectedNetwork}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -166,6 +224,54 @@ export default function HistoryView() {
             </motion.div>
           </AnimatePresence>
         </section>
+
+        <BottomSheet
+          open={filterSheetOpen}
+          onOpenChange={setFilterSheetOpen}
+          title="Filter"
+          description="Pilih jaringan untuk history wallet kamu."
+          closeLabel="Close history filters"
+          contentClassName="space-y-2"
+        >
+          {networkOptions.map((network) => {
+            const isActive = network === selectedNetwork;
+            const label = network === "all" ? "Semua" : network;
+
+            return (
+              <button
+                key={network}
+                type="button"
+                onClick={() => selectNetwork(network)}
+                className={cn(
+                  "flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl px-4 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
+                  isActive
+                    ? "bg-[#3B33BD] text-[#ccff00]"
+                    : "bg-black/25 text-white hover:bg-white/[0.04]",
+                )}
+              >
+                <span className="min-w-0 flex items-center gap-3">
+                  <Icon
+                    icon={network === "all" ? "solar:global-bold" : "lucide:network"}
+                    aria-hidden="true"
+                    width={19}
+                    height={19}
+                    className="shrink-0"
+                  />
+                  <span className="truncate text-sm font-bold">{label}</span>
+                </span>
+                {isActive ? (
+                  <Icon
+                    icon="material-symbols:check-rounded"
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    className="shrink-0"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </BottomSheet>
     </MobileShell>
   );
 }

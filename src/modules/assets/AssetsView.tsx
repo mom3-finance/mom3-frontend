@@ -57,7 +57,7 @@ const quickActions = [
     label: "Deposit",
     href: "#",
     icon: "lucide:arrow-down",
-    className: "bg-[#241CFF] text-[#ccff00]",
+    className: "bg-[#3B33BD] text-white",
   },
   {
     label: "Convert",

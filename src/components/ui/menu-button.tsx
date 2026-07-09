@@ -5,6 +5,8 @@ import Link from "next/link";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { useMagic } from "@/providers/MagicProvider";
+import { WalletAvatar } from "@/components/ui/wallet-avatar";
 
 const MenuButton = React.forwardRef<
   HTMLDivElement,
@@ -68,6 +70,8 @@ type FloatingMenuItem = {
 interface FloatingMenuButtonProps extends React.HTMLAttributes<HTMLElement> {
   items?: FloatingMenuItem[];
   activeHref?: string;
+  profileAddress?: string;
+  profileFallback?: string;
   profileHref?: string;
   profileLabel?: string;
   onProfileClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -97,6 +101,8 @@ const FloatingMenuButton = React.forwardRef<HTMLElement, FloatingMenuButtonProps
       className,
       items = defaultFloatingMenuItems,
       activeHref,
+      profileAddress,
+      profileFallback,
       profileHref = "/profile",
       profileLabel = "Profile",
       onProfileClick,
@@ -104,8 +110,21 @@ const FloatingMenuButton = React.forwardRef<HTMLElement, FloatingMenuButtonProps
     },
     ref
   ) => {
+    const { session } = useMagic();
+    const resolvedProfileAddress = profileAddress || session?.ownerAddress || "";
+    const resolvedProfileFallback =
+      profileFallback || session?.email || resolvedProfileAddress || "Wallet";
     const profileClassName =
-      "flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#3B33BD]/95 via-[#5A52D4]/95 to-[#7E78EA]/95 shadow-[0_12px_28px_-12px_rgba(0,0,0,0.9)] ring-1 ring-white/15 backdrop-blur-md transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#3B33BD]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black";
+      "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-[0_12px_28px_-12px_rgba(0,0,0,0.9)] ring-1 ring-white/15 backdrop-blur-md transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#3B33BD]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black";
+    const profileAvatar = (
+      <WalletAvatar
+        address={resolvedProfileAddress}
+        label={profileLabel}
+        fallback={resolvedProfileFallback}
+        size="lg"
+        className="h-full w-full rounded-full ring-0"
+      />
+    );
 
     return (
       <nav
@@ -169,14 +188,18 @@ const FloatingMenuButton = React.forwardRef<HTMLElement, FloatingMenuButtonProps
               href={profileHref}
               aria-label={profileLabel}
               className={profileClassName}
-            />
+            >
+              {profileAvatar}
+            </Link>
           ) : (
             <button
               type="button"
               aria-label={profileLabel}
               onClick={onProfileClick}
               className={profileClassName}
-            />
+            >
+              {profileAvatar}
+            </button>
           )}
         </div>
       </nav>

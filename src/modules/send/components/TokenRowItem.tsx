@@ -20,7 +20,6 @@ export function TokenRowItem({
       onClick={() => onSelect(token)}
       className={cn(
         "flex min-h-[76px] w-full items-center gap-3 rounded-[24px] border border-white/5 bg-black/20 px-3 py-3 text-left transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
-        selected && "border-[#ccff00]/45 bg-[#3B33BD]/18",
       )}
       aria-pressed={selected}
     >

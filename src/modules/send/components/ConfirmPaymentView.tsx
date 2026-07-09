@@ -4,8 +4,8 @@ import { Icon } from "@iconify/react";
 import * as React from "react";
 
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
+import { WalletAvatar } from "@/components/ui/wallet-avatar";
 import { truncateAddress } from "@/lib/wallet-session";
-import { cn } from "@/lib/utils";
 import { useConfirmPaymentState } from "@/modules/send/hooks/useConfirmPaymentState";
 import {
   formatTokenBalance,
@@ -51,14 +51,14 @@ export default function ConfirmPaymentView() {
         <div className="rounded-[32px] bg-[#111217] p-5 shadow-[0_12px_44px_-24px_rgba(59,51,189,0.6)]">
           {state.recipient ? (
             <>
-              <div
-                className={cn(
-                  "mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br text-2xl font-black text-white",
-                  state.recipient.color,
-                )}
-              >
-                {state.recipient.name.slice(0, 1)}
-              </div>
+              <WalletAvatar
+                address={state.recipient.address}
+                label={state.recipient.name}
+                fallback={state.recipient.name}
+                size="xl"
+                className="mx-auto"
+                fallbackClassName={state.recipient.color}
+              />
               <div className="mt-4 flex items-center justify-center gap-2">
                 <h2 className="text-2xl font-black tracking-tight text-white">{state.recipient.handle}</h2>
                 {state.recipient.status === "Verified" ? (

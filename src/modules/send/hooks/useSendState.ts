@@ -24,7 +24,12 @@ import {
   tokenIcon,
 } from "@/modules/send/utils";
 
-export function useSendState(initialTo: string, initialAsset: string, initialChain: string) {
+export function useSendState(
+  initialTo: string,
+  initialAsset: string,
+  initialChain: string,
+  initialAmount = "",
+) {
   const {
     universalAccount,
     primaryAssets,
@@ -36,7 +41,7 @@ export function useSendState(initialTo: string, initialAsset: string, initialCha
   const [query, setQuery] = React.useState(initialTo);
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null);
   const [selectedTokenId, setSelectedTokenId] = React.useState<string | null>(null);
-  const [amount, setAmount] = React.useState("");
+  const [amount, setAmount] = React.useState(() => sanitizeAmountInput(initialAmount));
   const [scanOpen, setScanOpen] = React.useState(false);
   const [step, setStep] = React.useState<"recipient" | "token" | "amount">("recipient");
   const [error, setError] = React.useState<string | null>(null);
@@ -121,25 +126,19 @@ export function useSendState(initialTo: string, initialAsset: string, initialCha
 
   React.useEffect(() => {
     if (!selectedRecipient || selectedTokenId || tokenRows.length === 0) return;
-    const preferredToken = findPreferredToken(tokenRows, initialAsset, initialChain);
-    if (preferredToken) {
-      setSelectedTokenId(preferredToken.id);
-      setStep("amount");
-    }
-  }, [initialAsset, initialChain, selectedRecipient, selectedTokenId, tokenRows]);
-
-  React.useEffect(() => {
-    if (!initialAsset || tokenRows.length === 0) return;
     const initialAssetKey = `${normalizeAssetQuery(initialAsset)}:${normalizeAssetQuery(initialChain)}`;
-    if (appliedInitialAsset.current === initialAssetKey) return;
+    if (initialAsset && appliedInitialAsset.current === initialAssetKey) return;
 
     const preferredToken = findPreferredToken(tokenRows, initialAsset, initialChain);
     if (preferredToken) {
       setSelectedTokenId(preferredToken.id);
-      appliedInitialAsset.current = initialAssetKey;
+      setAmount(sanitizeAmountInput(initialAmount));
       setStep("amount");
+      if (initialAsset) {
+        appliedInitialAsset.current = initialAssetKey;
+      }
     }
-  }, [initialAsset, initialChain, tokenRows]);
+  }, [initialAmount, initialAsset, initialChain, selectedRecipient, selectedTokenId, tokenRows]);
 
   React.useEffect(() => {
     if (!scanOpen) return;
@@ -185,7 +184,10 @@ export function useSendState(initialTo: string, initialAsset: string, initialCha
       setAmount("");
       setStep("token");
     } else if (step === "token") {
+      setSelectedRecipient(null);
       setSelectedTokenId(null);
+      setAmount("");
+      setQuery("");
       setStep("recipient");
     } else {
       resetCompose();

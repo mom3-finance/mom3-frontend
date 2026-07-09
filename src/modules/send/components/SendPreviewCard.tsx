@@ -3,6 +3,7 @@
 import { Icon } from "@iconify/react";
 import * as React from "react";
 
+import { WalletAvatar } from "@/components/ui/wallet-avatar";
 import { truncateAddress } from "@/lib/wallet-session";
 import type { SendPreview } from "@/modules/send/type";
 import {
@@ -46,8 +47,18 @@ export function SendPreviewCard({
         </div>
         <div className="flex items-start justify-between gap-3">
           <dt className="text-[#9A9AA2]">To</dt>
-          <dd className="text-right font-mono text-xs font-bold tabular-nums text-white">
-            {sendPreview.recipient.handle} · {truncateAddress(sendPreview.recipient.address, 5)}
+          <dd className="flex items-center justify-end gap-2 text-right font-mono text-xs font-bold tabular-nums text-white">
+            <span>
+              {sendPreview.recipient.handle} · {truncateAddress(sendPreview.recipient.address, 5)}
+            </span>
+            <WalletAvatar
+              address={sendPreview.recipient.address}
+              label={sendPreview.recipient.name}
+              fallback={sendPreview.recipient.name}
+              size="sm"
+              className="h-8 w-8"
+              fallbackClassName={sendPreview.recipient.color}
+            />
           </dd>
         </div>
         <div className="flex items-start justify-between gap-3 border-t border-white/10 pt-2.5">

@@ -1,5 +1,6 @@
 export * from "./avatar";
 export * from "./avatar-carika";
+export * from "./bottom-sheet";
 export * from "./brand-card";
 export * from "./button";
 export * from "./card";
@@ -7,4 +8,6 @@ export * from "./icon-action";
 export * from "./menu-button";
 export * from "./mini-chart";
 export * from "./mobile-shell";
+export * from "./skeleton";
 export * from "./swipper-button";
+export * from "./wallet-avatar";

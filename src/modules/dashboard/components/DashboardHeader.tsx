@@ -1,13 +1,16 @@
 import { Icon } from "@iconify/react";
 import { ChevronDown } from "lucide-react";
 
+import { WalletAvatar } from "@/components/ui/wallet-avatar";
+import { cn } from "@/lib/utils";
 import { currencyOptions } from "../constants/dashboard";
 import type { CurrencyCode } from "../type/dashboard";
-import { cn } from "@/lib/utils";
 
 type DashboardHeaderProps = {
   currency: CurrencyCode;
   currencyOpen: boolean;
+  profileAddress?: string;
+  profileFallback?: string;
   onSelectCurrency: (code: CurrencyCode) => void;
   onToggleCurrencyMenu: () => void;
 };
@@ -15,13 +18,20 @@ type DashboardHeaderProps = {
 export function DashboardHeader({
   currency,
   currencyOpen,
+  profileAddress,
+  profileFallback,
   onSelectCurrency,
   onToggleCurrencyMenu,
 }: DashboardHeaderProps) {
   return (
     <header className="flex items-center justify-between">
       <div className="flex items-center gap-2.5">
-        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#3B33BD] via-[#5A52D4] to-[#7E78EA]" />
+        <WalletAvatar
+          address={profileAddress}
+          label="Profile"
+          fallback={profileFallback || "@ubayy"}
+          size="sm"
+        />
         <div>
           <div className="flex items-center gap-2">
             <span className="text-base font-black">@ubayy</span>

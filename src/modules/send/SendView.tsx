@@ -20,8 +20,9 @@ export default function SendView() {
   const initialTo = searchParams.get("to") ?? "";
   const initialAsset = searchParams.get("asset") ?? "";
   const initialChain = searchParams.get("chain") ?? "";
+  const initialAmount = searchParams.get("amount") ?? "";
 
-  const state = useSendState(initialTo, initialAsset, initialChain);
+  const state = useSendState(initialTo, initialAsset, initialChain, initialAmount);
   const [tokenQuery, setTokenQuery] = React.useState("");
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {

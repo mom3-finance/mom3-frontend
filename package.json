@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@cfx-kit/wallet-avatar": "^0.0.5",
     "@iconify/react": "^6.0.2",
     "@magic-ext/evm": "^1.3.0",
     "@magic-ext/oauth2": "^1.0.0",

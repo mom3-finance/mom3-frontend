@@ -3,6 +3,7 @@
 import { Icon } from "@iconify/react";
 import * as React from "react";
 
+import { WalletAvatar } from "@/components/ui/wallet-avatar";
 import { truncateAddress } from "@/lib/wallet-session";
 import { cn } from "@/lib/utils";
 import type { Recipient } from "@/modules/send/type";
@@ -25,14 +26,12 @@ export function RecipientRow({
         selected && "bg-[#3B33BD]/10",
       )}
     >
-      <span
-        className={cn(
-          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-black text-white",
-          recipient.color,
-        )}
-      >
-        {recipient.name.slice(0, 1)}
-      </span>
+      <WalletAvatar
+        address={recipient.address}
+        label={recipient.name}
+        fallback={recipient.name}
+        fallbackClassName={recipient.color}
+      />
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
           <span className="truncate text-sm font-bold text-white">{recipient.handle}</span>

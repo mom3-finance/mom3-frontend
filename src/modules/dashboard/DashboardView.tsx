@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { FloatingMenuButton } from "@/components/ui/menu-button";
 import { MobileShell } from "@/components/ui/mobile-shell";
+import { useMagic } from "@/providers/MagicProvider";
 import { fadeUp } from "./constants/dashboard";
 import { BalanceCard } from "./components/BalanceCard";
 import { DashboardHeader } from "./components/DashboardHeader";
@@ -13,6 +14,7 @@ import { StrategyModeCard } from "./components/StrategyModeCard";
 import { useDashboardViewModel } from "./hooks/useDashboardViewModel";
 
 export default function DashboardView() {
+  const { session } = useMagic();
   const {
     activeMode,
     activeModeIndex,
@@ -43,6 +45,8 @@ export default function DashboardView() {
           <DashboardHeader
             currency={currency}
             currencyOpen={currencyOpen}
+            profileAddress={session?.ownerAddress}
+            profileFallback={session?.email}
             onSelectCurrency={handleSelectCurrency}
             onToggleCurrencyMenu={handleToggleCurrencyMenu}
           />
