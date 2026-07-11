@@ -14,7 +14,7 @@ export default function SplashPage() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setMinimumDurationElapsed(true);
-    }, 600);
+    }, 800);
 
     return () => window.clearTimeout(timer);
   }, []);
