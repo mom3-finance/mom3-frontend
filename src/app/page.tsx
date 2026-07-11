@@ -1,5 +1,4 @@
-import type { Viewport } from "next";
-import LandingDetailView from "@/modules/landing-detail/LandingDetailView";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "mom3 | AI Wallet for Yield, Lending, and Rebalancing",
@@ -7,14 +6,8 @@ export const metadata = {
     "Manage assets, discover lending markets, and rebalance your portfolio with mom3.",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#E6E1F0",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
+const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3001";
 
 export default function RootPage() {
-  return <LandingDetailView />;
+  redirect(landingUrl);
 }

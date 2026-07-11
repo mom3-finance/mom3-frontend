@@ -91,7 +91,9 @@ export function useProfileViewModel() {
 
   const logout = async () => {
     await magicLogout();
-    router.replace("/landing-detail");
+    window.location.assign(
+      process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3001",
+    );
   };
 
   const copyAddress = async (address: string, label: string) => {
