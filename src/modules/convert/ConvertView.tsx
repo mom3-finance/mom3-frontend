@@ -240,7 +240,7 @@ export default function ConvertView() {
                   {receiveAmount}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-[#9A9AA2]">
-                  â‰ˆ ${numericAmount ? numericAmount.toFixed(2) : "0.00"}
+                  ≈ ${numericAmount ? numericAmount.toFixed(2) : "0.00"}
                 </p>
               </div>
               <AssetButton asset={receiveAsset} onClick={() => setSelecting("receive")} />

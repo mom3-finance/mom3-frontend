@@ -89,7 +89,7 @@ export default function ConfirmPaymentView() {
           </div>
           {estimatedUsd !== null ? (
             <p className="mt-1 text-center text-sm font-semibold text-[#9A9AA2]">
-              Ã¢â€°Ë† {formatUsd(estimatedUsd)}
+              ≈ {formatUsd(estimatedUsd)}
             </p>
           ) : null}
           <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4 text-sm">
