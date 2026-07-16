@@ -80,7 +80,7 @@ export default function AiChatView() {
         body: JSON.stringify({ risk_tolerance: riskTolerance }),
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "Unable to search strategies.");
+      if (!response.ok) throw new Error(payload.detail || payload.error || "Unable to search strategies.");
       setStrategy(payload as AiStrategy);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to search strategies.");
