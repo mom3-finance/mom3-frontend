@@ -11,6 +11,7 @@ import { Typography } from "@/components/ui/typography";
 import type { AiStrategy, StrategyOpportunity } from "./types/ai.types";
 
 export type StrategySelection = {
+  marketId?: string;
   protocol?: string;
   chainId?: number;
   pool?: string;
@@ -178,12 +179,22 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
   React.useEffect(() => { void load(); }, [load]);
 
   const selectedOpportunity = React.useMemo(() => {
-    if (!selection?.protocol || !strategy?.opportunities) return null;
-    return strategy.opportunities.find((item) =>
-      item.protocol === selection.protocol &&
+    if (!strategy?.opportunities) return null;
+    const opportunities = strategy.opportunities;
+    if (selection?.marketId) {
+      const byMarketId = opportunities.find((item) => item.market_id === selection.marketId);
+      if (byMarketId) return byMarketId;
+    }
+    if (!selection?.protocol) return null;
+    const protocol = selection.protocol.toLowerCase();
+    return opportunities.find((item) =>
+      item.protocol.toLowerCase() === protocol &&
       (!selection.chainId || item.chain_id === selection.chainId) &&
       (!selection.poolId || item.pool_id === selection.poolId) &&
       (!selection.pool || item.pool === selection.pool)
+    ) ?? opportunities.find((item) =>
+      item.protocol.toLowerCase() === protocol &&
+      (!selection.chainId || item.chain_id === selection.chainId)
     ) ?? null;
   }, [selection, strategy]);
 

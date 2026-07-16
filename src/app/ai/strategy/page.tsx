@@ -22,6 +22,7 @@ export default async function AiStrategyPage({ searchParams }: StrategyPageProps
   return (
     <AiStrategyView
       selection={{
+        marketId: first(params.marketId),
         protocol: first(params.protocol),
         chainId: Number.isFinite(chainId) && chainId > 0 ? chainId : undefined,
         pool: first(params.pool),

@@ -121,6 +121,7 @@ function OpportunityCard({ opportunity }: { opportunity: StrategyOpportunity }) 
   const apyChange = opportunity.apy_change_1d;
   const riskClass = risk === "Low" ? "text-[#5EE6B0]" : risk === "Medium" ? "text-[#FFD166]" : "text-[#FF7B7B]";
   const detailParams = new URLSearchParams({
+    marketId: opportunity.market_id || "",
     protocol: opportunity.protocol,
     chainId: String(opportunity.chain_id),
     pool: opportunity.pool,
