@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const response = await fetch(`${backendUrl}/api/ai/markets?${params.toString()}`, { cache: "no-store" });
     const payload = await response.json();
 
-    // Keep the frontend compatible with an older Agentkit process that only
+    // Keep the frontend compatible with an older backend process that only
     // exposes /api/yield-forecast. This can happen while the local service is
     // running from a previous checkout or before it has been restarted.
     if (response.status === 404) {

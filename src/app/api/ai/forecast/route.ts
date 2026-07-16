@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 /**
  * GET /api/ai/forecast?chainId=42161
- * Thin proxy to the agentkit's /api/yield-forecast. Returns an empty payload
- * (not an error) when the agentkit isn't configured so widgets degrade quietly.
+ * Thin proxy to the backend's /api/ai/forecast. Returns an empty payload
+ * (not an error) when the backend isn't configured so widgets degrade quietly.
  */
 export async function GET(request: Request) {
   const chainId = new URL(request.url).searchParams.get("chainId") || undefined;
