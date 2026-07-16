@@ -1,0 +1,273 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { CHAIN_ID } from "@particle-network/universal-account-sdk";
+import { CheckCircle, ExternalLink } from "lucide-react";
+
+import { AppIcon } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
+import { Typography } from "@/components/ui/typography";
+import {
+  getFeeBreakdownRows,
+  getFundingRows,
+  getTotalFeeLabel,
+  sanitizeAmountInput,
+} from "@/modules/send/utils/send.utils";
+import { formatUsd } from "@/lib/format";
+import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
+import { useUniversalTransactionStatus } from "@/providers/universal-account/hooks/useUniversalTransactionStatus";
+import { useParticleTrade } from "./hooks/useParticleTrade";
+
+const targetNetworks = [
+  { chainId: CHAIN_ID.BASE_MAINNET, label: "Base", icon: "token-branded:base" },
+  { chainId: CHAIN_ID.ARBITRUM_MAINNET_ONE, label: "Arbitrum", icon: "token-branded:arbitrum" },
+  { chainId: CHAIN_ID.SOLANA_MAINNET, label: "Solana", icon: "token-branded:solana" },
+] as const;
+
+export default function ConvertView() {
+  const { primaryAssets, isLoading: isAccountLoading } = useUniversalAccount();
+  const trade = useParticleTrade();
+  const transactionStatus = useUniversalTransactionStatus(trade.transactionId);
+  const [amount, setAmount] = React.useState("");
+  const [targetChainId, setTargetChainId] = React.useState<number>(CHAIN_ID.SOLANA_MAINNET);
+  const numericAmount = Number(amount);
+  const amountIsValid = Number.isFinite(numericAmount) && numericAmount > 0;
+  const unifiedBalance = Number(primaryAssets?.totalAmountInUSD ?? 0);
+  const selectedNetwork = targetNetworks.find((network) => network.chainId === targetChainId)!;
+  const fundingRows = getFundingRows(trade.transaction);
+  const feeRows = getFeeBreakdownRows(trade.transaction);
+
+  const handlePrepare = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!amountIsValid || isAccountLoading) return;
+    await trade.prepare({ chainId: targetChainId, amount });
+  };
+
+  if (trade.status === "success" && trade.transactionId) {
+    const activityUrl = `https://universalx.app/activity/details?id=${encodeURIComponent(trade.transactionId)}`;
+
+    return (
+      <MobileShell>
+        <MobilePageHeader title="Convert" backHref="/dashboard" backLabel="Back to dashboard" />
+        <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
+            <CheckCircle className="h-10 w-10" aria-hidden="true" />
+          </span>
+          <Typography as="h2" variant="h1" className="mt-5">
+            Conversion submitted
+          </Typography>
+          <Typography variant="body-sm" color="muted" className="mt-2 max-w-xs">
+            {transactionStatus.state === "completed"
+              ? `${amount} USDC is now confirmed on ${selectedNetwork.label}.`
+              : transactionStatus.state === "failed"
+                ? "The conversion could not be completed. Open activity details for more information."
+                : `Your assets are being converted into ${amount} USDC on ${selectedNetwork.label}.`}
+          </Typography>
+          <span className="mt-4 rounded-full bg-white/[0.08] px-3 py-1 text-xs font-bold text-white" aria-live="polite">
+            {transactionStatus.state === "completed"
+              ? "Completed"
+              : transactionStatus.state === "failed"
+                ? "Failed"
+                : transactionStatus.state === "confirming"
+                  ? "Confirming"
+                  : "Submitted"}
+          </span>
+          <a
+            href={activityUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/[0.08] px-4 text-sm font-bold text-white focus-visible:ring-2 focus-visible:ring-[#ccff00] focus-visible:outline-none"
+          >
+            Track activity
+            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+          </a>
+          <div className="mt-8 grid w-full grid-cols-2 gap-2">
+            <Button variant="dark" size="lg" rounded="full" onClick={trade.reset}>
+              Convert again
+            </Button>
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#ccff00] px-6 text-base font-medium text-[#16162a] transition-all hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[#ccff00] focus-visible:outline-none active:scale-[0.98]"
+            >
+              Done
+            </Link>
+          </div>
+        </section>
+      </MobileShell>
+    );
+  }
+
+  return (
+    <MobileShell>
+      <MobilePageHeader title="Convert" backHref="/assets" backLabel="Back to assets" />
+
+      <form onSubmit={handlePrepare} className="mt-5 flex flex-1 flex-col gap-5">
+        <div className="rounded-[24px] bg-[#111217] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Typography variant="label" color="muted">From</Typography>
+              <Typography as="p" variant="h3" className="mt-1">Your universal balance</Typography>
+            </div>
+            <AppIcon icon="solar:wallet-money-bold" className="h-6 w-6 text-[#ccff00]" aria-hidden="true" />
+          </div>
+          <div className="my-4 h-px bg-white/[0.08]" />
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Typography variant="label" color="muted">To</Typography>
+              <Typography as="p" variant="h3" className="mt-1">USDC</Typography>
+            </div>
+            <span className="rounded-full bg-[#3B33BD]/20 px-3 py-1.5 text-sm font-black text-[#8F89FF]">USDC</span>
+          </div>
+        </div>
+
+        <fieldset className="space-y-2">
+          <Typography as="legend" variant="label" color="muted">Network</Typography>
+          <div className="grid grid-cols-3 gap-2">
+            {targetNetworks.map((network) => {
+              const isSelected = network.chainId === targetChainId;
+
+              return (
+                <Button
+                  key={network.chainId}
+                  type="button"
+                  variant={isSelected ? "lime" : "dark"}
+                  size="lg"
+                  rounded="lg"
+                  aria-pressed={isSelected}
+                  startIcon={<AppIcon icon={network.icon} width={18} height={18} aria-hidden="true" />}
+                  label={network.label}
+                  className="w-full px-2"
+                  onClick={() => {
+                    setTargetChainId(network.chainId);
+                    trade.reset();
+                  }}
+                />
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div className="rounded-[28px] bg-[#111217] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="convert-amount" className="text-xs font-black uppercase tracking-[0.08em] text-[#9A9AA2]">
+              USDC to receive
+            </label>
+            <Typography variant="caption" color="muted">
+              Balance {formatUsd(unifiedBalance)}
+            </Typography>
+          </div>
+          <div className="mt-3 flex items-baseline gap-3">
+            <input
+              id="convert-amount"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={amount}
+              onChange={(event) => {
+                setAmount(sanitizeAmountInput(event.target.value));
+                trade.reset();
+              }}
+              placeholder="0.00"
+              aria-invalid={amount.length > 0 && !amountIsValid ? "true" : undefined}
+              aria-describedby="convert-amount-help"
+              className="min-w-0 flex-1 bg-transparent font-mono text-4xl font-black tabular-nums text-white outline-none placeholder:text-[#66666D] focus-visible:ring-0"
+            />
+            <span className="rounded-full bg-[#3B33BD]/20 px-3 py-1.5 text-sm font-black text-[#8F89FF]">
+              USDC
+            </span>
+          </div>
+          <Typography id="convert-amount-help" variant="caption" color={amount.length > 0 && !amountIsValid ? "danger" : "muted"} className="mt-3 block">
+            {amount.length > 0 && !amountIsValid
+              ? "Enter an amount greater than zero."
+              : `You will receive the requested amount on ${selectedNetwork.label}; fees and source assets appear in the preview.`}
+          </Typography>
+        </div>
+
+        {trade.error ? (
+          <div className="rounded-2xl bg-red-500/10 p-4" role="alert">
+            <Typography variant="body-sm" color="danger">
+              {trade.error}
+            </Typography>
+            <Button type="button" variant="danger" size="sm" rounded="full" className="mt-3" onClick={trade.reset}>
+              Try again
+            </Button>
+          </div>
+        ) : null}
+
+        {trade.transaction ? (
+          <div className="space-y-4 rounded-[24px] bg-[#1C1C1E] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <Typography as="h3" variant="h3">
+                Review route
+              </Typography>
+              <Typography variant="label" color="accent">
+                {getTotalFeeLabel(trade.transaction)} fees
+              </Typography>
+            </div>
+
+            <div className="space-y-2">
+              {fundingRows.map((row) => (
+                <div key={`${row.label}-${row.value}`} className="flex items-start justify-between gap-4 text-sm">
+                  <span className="text-[#A7A7B7]">From {row.label}</span>
+                  <span className="font-mono tabular-nums text-white">{row.value}</span>
+                </div>
+              ))}
+              {feeRows.map((row) => (
+                <div key={row.label} className="flex items-center justify-between gap-4 text-sm">
+                  <span className="text-[#A7A7B7]">{row.label}</span>
+                  <span className="flex items-center justify-end gap-2 font-mono tabular-nums">
+                    {row.originalValue ? (
+                      <span className="text-[#77777F] line-through decoration-[#77777F]">
+                        {row.originalValue}
+                      </span>
+                    ) : null}
+                    <span className={row.originalValue ? "font-bold text-[#ccff00]" : "text-white"}>
+                      {row.value}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-black/25 p-3">
+              <span className="text-sm font-bold text-[#A7A7B7]">You receive</span>
+              <span className="font-mono text-sm font-black tabular-nums text-white">
+                {amount} USDC · {selectedNetwork.label}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-auto pt-3">
+          {trade.transaction ? (
+            <Button
+              type="button"
+              variant="lime"
+              size="xl"
+              rounded="full"
+              fullWidth
+              isLoading={trade.isSigning}
+              label={trade.isSigning ? "Waiting for signature" : "Confirm conversion"}
+              startIcon="lucide:check-circle"
+              onClick={() => void trade.execute()}
+            />
+          ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              size="xl"
+              rounded="full"
+              fullWidth
+              isLoading={trade.isPreparing}
+              isDisabled={!amountIsValid || isAccountLoading}
+              label={trade.isPreparing ? "Finding the best route" : "Preview conversion"}
+              startIcon="lucide:arrow-right"
+            />
+          )}
+        </div>
+      </form>
+    </MobileShell>
+  );
+}
