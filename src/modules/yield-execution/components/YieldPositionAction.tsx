@@ -201,14 +201,10 @@ export function YieldPositionAction({
             <button type="button" className="min-h-10 rounded-full px-3 text-xs font-black text-red-100 focus-visible:ring-2 focus-visible:ring-red-300" onClick={() => void position.refresh()}>Retry</button>
           </div>
         ) : null}
-        {hasPosition ? (
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <Button type="button" color="primary" size="lg" rounded="full" fullWidth label="Withdraw" startIcon="solar:download-minimalistic-bold" onClick={() => setMode("withdraw")} />
-            <Button type="button" color="dark" size="lg" rounded="full" fullWidth label="Add more" startIcon="solar:add-circle-bold" isDisabled={universalAssetBalance <= 0} onClick={() => setMode("supply")} />
-          </div>
-        ) : (
-          <Button type="button" color="primary" size="lg" rounded="full" fullWidth className="mt-3" label="Supply" startIcon="solar:upload-minimalistic-bold" isDisabled={universalAssetBalance <= 0} onClick={() => setMode("supply")} />
-        )}
+        <div className={cn("mt-3 grid gap-3", hasPosition ? "grid-cols-2" : "grid-cols-1")}>
+          <Button type="button" color="primary" size="lg" rounded="full" fullWidth label="Supply" startIcon="solar:upload-minimalistic-bold" isDisabled={universalAssetBalance <= 0} onClick={() => setMode("supply")} />
+          {hasPosition ? <Button type="button" color="dark" size="lg" rounded="full" fullWidth label="Withdraw" startIcon="solar:download-minimalistic-bold" onClick={() => setMode("withdraw")} /> : null}
+        </div>
       </section>
     );
   }

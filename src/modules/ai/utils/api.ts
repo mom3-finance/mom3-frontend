@@ -38,7 +38,11 @@ export async function createAiReply(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, history: historyPayload, chainId }),
-  }).then((r) => r.json().catch(() => ({}))) as Promise<{
+  }).then(async (r) => {
+    const payload = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(payload.detail || payload.error || "AI chat is unavailable.");
+    return payload;
+  }) as Promise<{
     reply?: string;
     model?: string;
     context_used?: Record<string, unknown>;
@@ -50,7 +54,11 @@ export async function createAiReply(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ risk_tolerance: riskTolerance, chain_id: chainId }),
       })
-        .then((r) => r.json().catch(() => null))
+        .then(async (r) => {
+          const payload = await r.json().catch(() => null);
+          if (!r.ok) throw new Error(payload?.detail || payload?.error || "Strategy is unavailable.");
+          return payload;
+        })
         .catch(() => null)
     : Promise.resolve(null);
 

@@ -165,7 +165,7 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
         body: JSON.stringify({ risk_tolerance: riskTolerance }),
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "Strategy unavailable.");
+      if (!response.ok) throw new Error(payload.detail || payload.error || "Strategy unavailable.");
       setStrategy(payload as AiStrategy);
       setError(null);
     } catch (cause) {
