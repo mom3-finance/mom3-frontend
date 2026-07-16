@@ -10,6 +10,14 @@ import { ChatEmptyState } from "./components/ChatEmptyState";
 import { StrategyResponse } from "./components/StrategyResponse";
 import type { AiStrategy } from "./types/ai.types";
 
+type RiskTolerance = "conservative" | "moderate" | "aggressive";
+
+const riskModes: Array<{ value: RiskTolerance; label: string; description: string }> = [
+  { value: "conservative", label: "Safe", description: "Prioritize lower risk" },
+  { value: "moderate", label: "Balanced", description: "Balance risk and APY" },
+  { value: "aggressive", label: "Degen", description: "Prioritize higher APY" },
+];
+
 function SearchingStrategyOverlay() {
   return (
     <div
@@ -51,6 +59,14 @@ export default function AiChatView() {
   const [strategy, setStrategy] = React.useState<AiStrategy | null>(null);
   const [isSearching, setIsSearching] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [riskTolerance, setRiskTolerance] = React.useState<RiskTolerance>("moderate");
+
+  React.useEffect(() => {
+    const savedMode = window.localStorage.getItem("mom3-risk-tolerance");
+    if (savedMode === "conservative" || savedMode === "moderate" || savedMode === "aggressive") {
+      setRiskTolerance(savedMode);
+    }
+  }, []);
 
   const searchStrategies = React.useCallback(async () => {
     if (isSearching) return;
@@ -61,7 +77,7 @@ export default function AiChatView() {
       const response = await fetch("/api/ai/strategy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ risk_tolerance: "moderate" }),
+        body: JSON.stringify({ risk_tolerance: riskTolerance }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "Unable to search strategies.");
@@ -71,11 +87,42 @@ export default function AiChatView() {
     } finally {
       setIsSearching(false);
     }
-  }, [isSearching]);
+  }, [isSearching, riskTolerance]);
 
   return (
     <MobileShell contentClassName="pb-10 pt-20">
       <MobileHeader title="mom3 /agent" backHref="/dashboard" backLabel="Back to dashboard" />
+
+      <section className="mt-4 rounded-[24px] border border-white/10 bg-[#111217] p-4" aria-labelledby="risk-mode-title">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p id="risk-mode-title" className="text-sm font-black text-white">Strategy mode</p>
+            <p className="mt-1 text-xs font-medium text-[#A7A7B7]">AI will search markets using this risk profile.</p>
+          </div>
+          <AppIcon icon="solar:tuning-2-bold" aria-hidden="true" width={20} height={20} className="text-[#ccff00]" />
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Strategy risk mode">
+          {riskModes.map((mode) => {
+            const active = riskTolerance === mode.value;
+            return (
+              <button
+                key={mode.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  setRiskTolerance(mode.value);
+                  window.localStorage.setItem("mom3-risk-tolerance", mode.value);
+                }}
+                className={`rounded-2xl border px-2 py-3 text-center transition-colors ${active ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]" : "border-white/10 bg-black/20 text-[#A7A7B7]"}`}
+              >
+                <span className="block text-xs font-black">{mode.label}</span>
+                <span className="mt-1 block text-[10px] font-medium leading-tight">{mode.description}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {!strategy && !error ? (
         <section className="flex min-h-[calc(100dvh-8rem)] items-center justify-center pb-10">

@@ -192,8 +192,12 @@ function MarketList({
   title: string;
   items: MarketItem[];
 }) {
+  const pageSize = 10;
+  const [visibleCount, setVisibleCount] = React.useState(pageSize);
   const category = items[0]?.category ?? "Yield";
   const styles = marketCategoryStyles[category];
+  const visibleItems = items.slice(0, visibleCount);
+  React.useEffect(() => setVisibleCount(pageSize), [items]);
 
   return (
     <motion.section
@@ -204,15 +208,19 @@ function MarketList({
     >
       <div className="flex items-end justify-between gap-3">
         <h2 className="flex items-center gap-1 text-base font-semibold text-white">
-          {title}
-          <AppIcon icon="lucide:chevron-right" aria-hidden="true" width={17} height={17} className={styles.sectionIcon} />
+          {items[0] ? (
+            <Link href={marketDetailHref(items[0])} className="flex min-h-10 items-center gap-1 rounded-md focus-visible:ring-2 focus-visible:ring-[#ccff00]">
+              {title}
+              <AppIcon icon="lucide:chevron-right" aria-hidden="true" width={17} height={17} className={styles.sectionIcon} />
+            </Link>
+          ) : title}
         </h2>
         <span className="rounded-full bg-[#1C1C1E] px-2.5 py-1 text-xs font-bold text-[#A7A7B7]">
           {items.length} market{items.length === 1 ? "" : "s"}
         </span>
       </div>
       <div className={cn("mt-3 overflow-hidden rounded-[28px] p-3", styles.container)}>
-        {items.map((item, index) => {
+        {visibleItems.map((item, index) => {
           const asset = assetLabel(item.asset);
           return (
           <motion.div
@@ -253,6 +261,17 @@ function MarketList({
           </motion.div>
           );
         })}
+        {visibleCount < items.length ? (
+          <div className="mt-2 flex justify-center border-t border-white/[0.06] px-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((current) => Math.min(items.length, current + pageSize))}
+              className="min-h-10 rounded-full px-4 text-xs font-bold text-[#ccff00] transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#ccff00]"
+            >
+              Show more ({items.length - visibleCount} remaining)
+            </button>
+          </div>
+        ) : null}
       </div>
     </motion.section>
   );
@@ -276,15 +295,10 @@ export default function ExploreView() {
     [riskPools, query, showRisk],
   );
 
-  const bestYield = React.useMemo(
-    () => [...filteredYield].sort((left, right) => right.apy - left.apy).slice(0, 3),
-    [filteredYield],
-  );
-
   const protocolGroups = React.useMemo(() => {
     const groups = new Map<string, MarketItem[]>();
 
-    filteredYield.forEach((market) => {
+    [...filteredYield, ...filteredRisk].forEach((market) => {
       const protocol = market.protocol.trim() || "Other";
       const existing = groups.get(protocol) ?? [];
       existing.push(market);
@@ -305,7 +319,7 @@ export default function ExploreView() {
         }
         return left.protocol.localeCompare(right.protocol);
       });
-  }, [filteredYield]);
+  }, [filteredRisk, filteredYield]);
 
   const hasResults = filteredYield.length > 0 || filteredRisk.length > 0;
   const selectedCategoryLabel =
@@ -421,9 +435,6 @@ export default function ExploreView() {
           </motion.div>
         ) : hasResults ? (
           <>
-            {bestYield.length > 0 ? (
-              <MarketList title="Best Yield" items={bestYield} />
-            ) : null}
             {protocolGroups.map((group) => (
               <MarketList
                 key={group.protocol}

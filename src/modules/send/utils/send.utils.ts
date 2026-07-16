@@ -192,6 +192,10 @@ export function normalizeAssetQuery(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+function tokenAssetKeys(token: TokenRow) {
+  return [token.symbol, token.name].map(normalizeAssetQuery).filter(Boolean);
+}
+
 export function sanitizeAmountInput(value: string) {
   const normalized = value.replace(",", ".").replace(/[^0-9.]/g, "");
   const [whole, ...fractions] = normalized.split(".");
@@ -206,9 +210,9 @@ export function matchesAsset(token: TokenRow, asset: string, chain = "") {
 
   if (!normalizedAsset) return false;
 
-  const assetMatches = [token.symbol, token.name]
-    .map(normalizeAssetQuery)
-    .some((value) => value === normalizedAsset || value.includes(normalizedAsset));
+  const assetMatches = tokenAssetKeys(token).some(
+    (value) => value === normalizedAsset || value.includes(normalizedAsset),
+  );
 
   if (!assetMatches) return false;
   if (!normalizedChain) return true;
@@ -219,6 +223,24 @@ export function matchesAsset(token: TokenRow, asset: string, chain = "") {
 
 export function findPreferredToken(tokens: TokenRow[], asset: string, chain = "") {
   if (!asset) return null;
+
+  const normalizedAsset = normalizeAssetQuery(asset);
+  const normalizedChain = normalizeAssetQuery(chain);
+
+  const exactWithChain = tokens.find((token) => {
+    const tokenChain = normalizeAssetQuery(token.chainName);
+    return (
+      tokenAssetKeys(token).some((value) => value === normalizedAsset) &&
+      normalizedChain &&
+      (tokenChain === normalizedChain || tokenChain.includes(normalizedChain))
+    );
+  });
+  if (exactWithChain) return exactWithChain;
+
+  const exactWithoutChain = tokens.find((token) =>
+    tokenAssetKeys(token).some((value) => value === normalizedAsset),
+  );
+  if (exactWithoutChain) return exactWithoutChain;
 
   return (
     tokens.find((token) => matchesAsset(token, asset, chain)) ??

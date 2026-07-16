@@ -64,9 +64,9 @@ export function useUniversalAccountSnapshotQuery(
       ),
     enabled: Boolean(ownerAddress && universalAccount),
     staleTime: 5_000,
-    // WebSocket invalidations are the primary refresh path. Keep a slower poll
-    // only as a recovery fallback when the realtime gateway is unavailable.
-    refetchInterval: 60_000,
+    // WebSocket invalidations are an optimisation. Polling keeps balance
+    // correct when the realtime gateway is unavailable or misconfigured.
+    refetchInterval: 15_000,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: "always",
     refetchOnReconnect: "always",

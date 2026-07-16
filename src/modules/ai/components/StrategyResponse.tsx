@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import * as React from "react";
 
 import { AppIcon } from "@/components/ui/app-icon";
 import { chainNameFromId } from "@/lib/chain";
@@ -217,12 +220,16 @@ function OpportunityCard({ opportunity }: { opportunity: StrategyOpportunity }) 
 }
 
 export function StrategyResponse({ strategy }: { strategy?: AiStrategy }) {
+  const pageSize = 10;
+  const [visibleCount, setVisibleCount] = React.useState(pageSize);
+  React.useEffect(() => setVisibleCount(pageSize), [strategy?.last_updated, strategy?.risk_score]);
   if (!strategy) return null;
 
   const opportunities = (strategy.opportunities?.length
     ? strategy.opportunities
     : fallbackOpportunities(strategy)
   ).filter((item) => item.allocation > 0);
+  const visibleOpportunities = opportunities.slice(0, visibleCount);
 
   return (
     <div>
@@ -245,7 +252,7 @@ export function StrategyResponse({ strategy }: { strategy?: AiStrategy }) {
 
       <div className="space-y-3">
         {opportunities.length > 0 ? (
-          opportunities.map((opportunity) => (
+          visibleOpportunities.map((opportunity) => (
             <OpportunityCard
               key={`${opportunity.protocol}-${opportunity.chain_id}-${opportunity.pool_id || opportunity.pool}`}
               opportunity={opportunity}
@@ -256,6 +263,17 @@ export function StrategyResponse({ strategy }: { strategy?: AiStrategy }) {
             No live yield opportunity passed the current risk filter.
           </div>
         )}
+        {visibleCount < opportunities.length ? (
+          <div className="flex justify-center pt-1">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((current) => Math.min(opportunities.length, current + pageSize))}
+              className="min-h-10 rounded-full px-4 text-xs font-bold text-[#ccff00] transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#ccff00]"
+            >
+              Show more ({opportunities.length - visibleCount} remaining)
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

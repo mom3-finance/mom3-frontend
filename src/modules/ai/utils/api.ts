@@ -13,6 +13,16 @@ export async function createAiReply(
   history?: ChatMessage[],
   chainId?: number,
 ): Promise<ChatMessage> {
+  const riskTolerance =
+    typeof window !== "undefined" &&
+    ["conservative", "moderate", "aggressive"].includes(
+      window.localStorage.getItem("mom3-risk-tolerance") || "",
+    )
+      ? (window.localStorage.getItem("mom3-risk-tolerance") as
+          | "conservative"
+          | "moderate"
+          | "aggressive")
+      : "moderate";
   const normalized = message.toLowerCase();
   const isStrategyQuestion = ["safe", "yield", "strategy", "rebalance", "risk", "apy", "allocation"].some((w) =>
     normalized.includes(w),
@@ -38,7 +48,7 @@ export async function createAiReply(
     ? fetch("/api/ai/strategy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ risk_tolerance: "moderate", chain_id: chainId }),
+        body: JSON.stringify({ risk_tolerance: riskTolerance, chain_id: chainId }),
       })
         .then((r) => r.json().catch(() => null))
         .catch(() => null)

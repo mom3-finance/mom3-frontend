@@ -20,6 +20,9 @@ export function useDashboardViewModel() {
 
   useEffect(() => {
     setMounted(true);
+    const savedMode = window.localStorage.getItem("mom3-risk-tolerance");
+    const savedIndex = savedMode === "aggressive" ? 0 : savedMode === "conservative" ? 2 : 1;
+    setActiveModeIndex(savedIndex);
   }, []);
 
   const activeMode = portfolioModes[activeModeIndex] ?? portfolioModes[0];
@@ -49,6 +52,8 @@ export function useDashboardViewModel() {
 
   function handleSelectMode(index: number) {
     setActiveModeIndex(index);
+    const riskTolerance = index === 0 ? "aggressive" : index === 2 ? "conservative" : "moderate";
+    window.localStorage.setItem("mom3-risk-tolerance", riskTolerance);
   }
 
   return {

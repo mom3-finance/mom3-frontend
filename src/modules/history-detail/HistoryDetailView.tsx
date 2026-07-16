@@ -2,9 +2,32 @@
 
 import { AppIcon } from "@/components/ui/app-icon";
 import { motion } from "framer-motion";
+import * as React from "react";
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { historyTabs, type HistoryItem } from "@/lib/history";
 import { cn } from "@/lib/utils";
+import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
+
+function mapStoredActivity(raw: any): HistoryItem {
+  const amount = raw?.amount || {};
+  const value = Number(amount.value || 0);
+  const usd = Number(amount.usd || 0);
+  const direction = amount.direction === "in" ? "+" : amount.direction === "out" ? "-" : "";
+  return {
+    id: String(raw.transactionId),
+    tab: "me",
+    title: String(raw.title || "Transaction"),
+    description: String(raw.description || raw.network || "Universal"),
+    amount: value ? `${direction}${value.toFixed(4)} ${amount.symbol || ""}`.trim() : usd ? `${direction}$${usd.toFixed(2)}` : "—",
+    time: raw.occurredAt ? new Date(raw.occurredAt).toLocaleString() : "Recently",
+    status: String(raw.status || "Completed"),
+    network: String(raw.network || "Universal"),
+    reference: String(raw.reference || raw.transactionId),
+    note: String(raw.note || "Transaction confirmed through Particle Universal Account."),
+    icon: String(raw.icon || "solar:transfer-horizontal-bold"),
+    tone: raw.tone === "green" || raw.tone === "purple" ? raw.tone : "blue",
+  };
+}
 
 const toneClassName: Record<HistoryItem["tone"], string> = {
   green: "bg-[#ccff00] text-[#0a0a0a]",
@@ -12,8 +35,35 @@ const toneClassName: Record<HistoryItem["tone"], string> = {
   blue: "bg-[#2d2eff] text-white",
 };
 
-export default function HistoryDetailView({ item }: { item: HistoryItem }) {
-  const tabLabel = historyTabs.find((tab) => tab.id === item.tab)?.label;
+export default function HistoryDetailView({ item, activityId }: { item?: HistoryItem; activityId?: string }) {
+  const { accountInfo } = useUniversalAccount();
+  const [liveItem, setLiveItem] = React.useState<HistoryItem | null>(item || null);
+  const [isLoading, setIsLoading] = React.useState(!item && Boolean(activityId));
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (item || !activityId) return;
+    const account = accountInfo.evmSmartAccount || accountInfo.ownerAddress;
+    if (!account) {
+      setIsLoading(false);
+      setError("Connect your wallet to view this activity.");
+      return;
+    }
+    void fetch(`/api/history/${encodeURIComponent(activityId)}?account=${encodeURIComponent(account)}`, { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Activity not found.");
+        setLiveItem(mapStoredActivity(payload.data));
+      })
+      .catch((cause) => setError(cause instanceof Error ? cause.message : "Activity unavailable."))
+      .finally(() => setIsLoading(false));
+  }, [accountInfo.evmSmartAccount, accountInfo.ownerAddress, activityId, item]);
+
+  if (isLoading) return <MobileShell><MobilePageHeader title="Detail" backHref="/history" backLabel="Back to history" /><p className="mt-6 text-center text-sm text-[#9A9AA2]">Loading activity…</p></MobileShell>;
+  if (error || !liveItem) return <MobileShell><MobilePageHeader title="Detail" backHref="/history" backLabel="Back to history" /><p className="mt-6 text-center text-sm text-[#FF7B7B]">{error || "Activity not found."}</p></MobileShell>;
+
+  const resolvedItem = liveItem;
+  const tabLabel = historyTabs.find((tab) => tab.id === resolvedItem.tab)?.label;
 
   return (
     <MobileShell>
@@ -28,21 +78,21 @@ export default function HistoryDetailView({ item }: { item: HistoryItem }) {
           <span
             className={cn(
               "mx-auto flex h-16 w-16 items-center justify-center rounded-full",
-              toneClassName[item.tone]
+              toneClassName[resolvedItem.tone]
             )}
           >
-            <AppIcon icon={item.icon} aria-hidden="true" width={30} height={30} />
+            <AppIcon icon={resolvedItem.icon} aria-hidden="true" width={30} height={30} />
           </span>
           <p className="mt-4 text-sm font-semibold text-[#9A9AA2]">
             {tabLabel} history
           </p>
           <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
-            {item.title}
+            {resolvedItem.title}
           </h2>
           <p className="mt-2 text-sm font-medium text-[#9A9AA2]">
-            {item.note}
+            {resolvedItem.note}
           </p>
-          <p className="mt-5 text-3xl font-black text-white">{item.amount}</p>
+          <p className="mt-5 text-3xl font-black text-white">{resolvedItem.amount}</p>
         </motion.section>
 
         <motion.section
@@ -52,10 +102,10 @@ export default function HistoryDetailView({ item }: { item: HistoryItem }) {
           className="mt-5 overflow-hidden rounded-[28px] bg-[#1C1C1E]"
         >
           {[
-            ["Status", item.status],
-            ["Network", item.network],
-            ["Reference", item.reference],
-            ["Time", item.time],
+            ["Status", resolvedItem.status],
+            ["Network", resolvedItem.network],
+            ["Reference", resolvedItem.reference],
+            ["Time", resolvedItem.time],
           ].map(([label, value], index) => (
             <motion.div
               key={label}

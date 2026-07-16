@@ -20,7 +20,8 @@ export function useYieldExecution(action: YieldAction) {
   const [intent, setIntent] = React.useState<AiExecutionIntent | null>(null);
 
   const prepare = React.useCallback(async (marketId: string, amount: string, chainId: number) => {
-    if (!universalAccount || !accountInfo.evmSmartAccount) {
+    const userAddress = chainId === 101 ? accountInfo.solanaSmartAccount : accountInfo.evmSmartAccount;
+    if (!universalAccount || !userAddress) {
       setError("Your Universal Account is not ready yet.");
       setStatus("error");
       return null;
@@ -39,7 +40,7 @@ export function useYieldExecution(action: YieldAction) {
           market_id: marketId,
           action,
           amount,
-          user_address: accountInfo.evmSmartAccount,
+          user_address: userAddress,
         }),
       });
       const nextIntent = await response.json().catch(() => ({}));
@@ -50,22 +51,24 @@ export function useYieldExecution(action: YieldAction) {
         validated.validated_by !== "mom3-backend" ||
         validated.action !== action ||
         validated.chain_id !== chainId ||
-        validated.receiver.toLowerCase() !== accountInfo.evmSmartAccount.toLowerCase() ||
+        validated.receiver !== userAddress && validated.receiver?.toLowerCase?.() !== userAddress.toLowerCase() ||
         !Array.isArray(validated.transactions) ||
         validated.transactions.length === 0
       ) {
         throw new Error("The validated transaction does not match this market.");
       }
 
-      await ensureDelegated(chainId);
+      if (chainId !== 101) await ensureDelegated(chainId);
       const particleTransaction = await universalAccount.createUniversalTransaction({
         chainId,
-        expectTokens: action === "supply"
+          expectTokens: action === "supply" && chainId !== 101
           ? [{ type: SUPPORTED_TOKEN_TYPE.USDC, amount: validated.amount }]
           : [],
         transactions: validated.transactions,
       });
-      const nextTransaction = prepareSponsoredTransaction(particleTransaction);
+      const nextTransaction = prepareSponsoredTransaction(particleTransaction, {
+        required: true,
+      });
       setIntent(validated);
       setTransaction(nextTransaction);
       setStatus("idle");
@@ -75,7 +78,7 @@ export function useYieldExecution(action: YieldAction) {
       setStatus("error");
       return null;
     }
-  }, [accountInfo.evmSmartAccount, action, ensureDelegated, universalAccount]);
+  }, [accountInfo.evmSmartAccount, accountInfo.solanaSmartAccount, action, ensureDelegated, universalAccount]);
 
   const execute = React.useCallback(async () => {
     if (!transaction) return null;

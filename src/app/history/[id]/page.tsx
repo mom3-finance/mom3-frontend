@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { notFound } from "next/navigation";
 import { allHistoryItems, getHistoryItemById } from "@/lib/history";
 import HistoryDetailView from "@/modules/history-detail/HistoryDetailView";
 
@@ -37,9 +36,5 @@ export default async function HistoryDetailPage({
   const { id } = await params;
   const item = getHistoryItemById(id);
 
-  if (!item) {
-    notFound();
-  }
-
-  return <HistoryDetailView item={item} />;
+  return <HistoryDetailView item={item} activityId={id} />;
 }

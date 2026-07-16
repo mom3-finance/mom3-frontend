@@ -16,7 +16,7 @@ const MAX_RECONNECT_MS = 30_000;
 function realtimeUrl() {
   const configured = process.env.NEXT_PUBLIC_MOM3_REALTIME_URL;
   const backend = process.env.NEXT_PUBLIC_MOM3_BACKEND_URL;
-  const candidate = configured || backend;
+  const candidate = configured || (backend ? `${backend.replace(/\/$/, "")}/realtime` : "");
 
   if (!candidate) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -29,7 +29,7 @@ function realtimeUrl() {
       url.hostname = window.location.hostname;
     }
     url.protocol = url.protocol === "https:" || url.protocol === "wss:" ? "wss:" : "ws:";
-    url.pathname = configured ? url.pathname : "/realtime";
+    url.pathname = configured ? (url.pathname || "/realtime") : "/realtime";
     return url.toString();
   } catch {
     return candidate;

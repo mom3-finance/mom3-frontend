@@ -4,7 +4,6 @@ import * as React from "react";
 
 import { chainNameFromId } from "@/lib/chain";
 import { formatUsdValue } from "@/lib/format";
-import { isMvpChainId } from "@/providers/shared/constants/chain.constants";
 import { useRealtime } from "@/providers/realtime/components/RealtimeProvider";
 
 export type ExploreYieldPool = {
@@ -30,6 +29,7 @@ export type ExploreYieldPool = {
   apyChange1d?: number;
   apyChange7d?: number;
   apyChange30d?: number;
+  opportunityScore?: number;
 };
 
 type PulseEntry = {
@@ -60,6 +60,7 @@ type YieldMarketEntry = {
   source?: string;
   trend?: string;
   risk_score?: number;
+  opportunity_score?: number;
   execution?: { enabled?: boolean };
 };
 
@@ -105,6 +106,13 @@ function riskScoreFor(protocol: string) {
     if (key.includes(name)) return RISK_SCORES[name];
   }
   return 5.0;
+}
+
+function rankingScore(apy: number, tvl: number, riskScore: number, opportunityScore?: number) {
+  if (Number.isFinite(opportunityScore) && Number(opportunityScore) > 0) return Number(opportunityScore);
+  const riskAdjustment = Math.max(0.25, 1 - Math.min(Math.max(riskScore, 0), 10) / 15);
+  const tvlSignal = tvl > 0 ? Math.min(Math.log10(tvl) / 10, 1) : 0;
+  return apy * riskAdjustment + tvlSignal;
 }
 
 /**
@@ -153,11 +161,12 @@ export function useExploreYields() {
           const protocol = String(market.protocol || "Unknown protocol");
           const symbol = String(market.symbol || "Yield pool");
           const chainId = Number(market.chain_id ?? 0);
-          if (!isMvpChainId(chainId)) continue;
+          if (!chainId) continue;
           const apy = Number(market.apy ?? 0);
           const pulse = pulseMap[protocol.toLowerCase()];
           const tvl = Number(market.tvl ?? pulse?.tvl ?? 0);
           const riskScore = Number(market.risk_score ?? riskScoreFor(protocol));
+          const score = rankingScore(apy, tvl, riskScore, Number(market.opportunity_score));
           const pulseScore = Number(pulse?.pulse_score ?? 60);
           const isRisk = pulseScore < 40 || riskScore >= 6 || market.impermanent_loss === true;
           built.push({
@@ -183,14 +192,12 @@ export function useExploreYields() {
             apyChange1d: Number(market.apy_change_1d ?? 0),
             apyChange7d: Number(market.apy_change_7d ?? 0),
             apyChange30d: Number(market.apy_change_30d ?? 0),
+            opportunityScore: score,
           });
         }
 
-        // Sort: yield pools by APY desc, risk pools after.
-        built.sort((a, b) => {
-          if (a.category !== b.category) return a.category === "Yield" ? -1 : 1;
-          return b.apy - a.apy;
-        });
+        // Explore is a ranked shortlist, not the complete DefiLlama catalog.
+        built.sort((a, b) => (b.opportunityScore ?? 0) - (a.opportunityScore ?? 0));
 
         if (!cancelled) {
           setPools(built);

@@ -18,6 +18,8 @@ export type RealHistoryItem = {
   note: string;
   icon: string;
   tone: "green" | "purple" | "blue";
+  activityType?: string;
+  protocol?: string | null;
 };
 
 function relativeTime(timestamp?: number | string): string {
@@ -75,13 +77,36 @@ function summarizeTransaction(raw: any): RealHistoryItem {
   };
 }
 
+function mapStoredActivity(raw: any): RealHistoryItem {
+  const amount = raw?.amount || {};
+  const value = Number(amount.value || 0);
+  const usd = Number(amount.usd || 0);
+  const symbol = String(amount.symbol || "");
+  const direction = amount.direction === "in" ? "+" : amount.direction === "out" ? "-" : "";
+  return {
+    id: String(raw.transactionId),
+    title: String(raw.title || "Transaction"),
+    description: String(raw.description || raw.network || "Universal"),
+    amount: value ? `${direction}${value.toFixed(4)} ${symbol}`.trim() : usd ? `${direction}${formatUsdValue(usd)}` : "—",
+    time: relativeTime(raw.occurredAt),
+    status: String(raw.status || "Completed"),
+    network: String(raw.network || "Universal"),
+    reference: String(raw.reference || raw.transactionId),
+    note: String(raw.note || "Transaction confirmed through Particle Universal Account."),
+    icon: String(raw.icon || "solar:transfer-horizontal-bold"),
+    tone: raw.tone === "green" || raw.tone === "purple" ? raw.tone : "blue",
+    activityType: String(raw.activityType || "transaction"),
+    protocol: raw.protocol || null,
+  };
+}
+
 /**
  * Reads the user's REAL transaction history from the Particle Universal Account
  * SDK (`universalAccount.getTransactions`). Falls back to an empty list (not mock)
  * when the SDK is unavailable or returns nothing.
  */
 export function useTransactions(limit = 20) {
-  const { universalAccount } = useUniversalAccount();
+  const { universalAccount, accountInfo } = useUniversalAccount();
   const [items, setItems] = React.useState<RealHistoryItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -95,15 +120,38 @@ export function useTransactions(limit = 20) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await universalAccount.getTransactions(1, limit);
-      const list = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const pageSize = Math.max(limit, 50);
+      const list: any[] = [];
+      for (let page = 1; page <= 20; page += 1) {
+        const response = await universalAccount.getTransactions(page, pageSize);
+        const pageItems = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+        list.push(...pageItems);
+        if (pageItems.length < pageSize) break;
+      }
+      const account = accountInfo.evmSmartAccount || accountInfo.ownerAddress;
+      if (account && list.length) {
+        const syncResponse = await fetch("/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account, transactions: list }),
+          cache: "no-store",
+        });
+        if (syncResponse.ok) {
+          const storedResponse = await fetch(`/api/history?account=${encodeURIComponent(account)}&limit=${Math.max(limit, 50)}`, { cache: "no-store" });
+          const storedPayload = await storedResponse.json().catch(() => ({}));
+          if (storedResponse.ok && Array.isArray(storedPayload?.items)) {
+            setItems(storedPayload.items.map(mapStoredActivity));
+            return;
+          }
+        }
+      }
       setItems(list.map(summarizeTransaction));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load transactions.");
     } finally {
       setIsLoading(false);
     }
-  }, [universalAccount, limit]);
+  }, [accountInfo.evmSmartAccount, accountInfo.ownerAddress, universalAccount, limit]);
 
   React.useEffect(() => {
     void load();

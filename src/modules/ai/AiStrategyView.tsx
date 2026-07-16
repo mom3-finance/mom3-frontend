@@ -127,7 +127,7 @@ function StrategyDetail({ opportunity, reasoning }: { opportunity: StrategyOppor
 
       {opportunity.execution?.enabled && opportunity.market_id ? (
         <Link
-          href={`/explore/yield-usdc-aave-v3?chainId=${opportunity.chain_id}&marketId=${encodeURIComponent(opportunity.market_id)}`}
+          href={`/explore/${encodeURIComponent(`${opportunity.protocol}-${opportunity.asset}`)}?chainId=${opportunity.chain_id}&marketId=${encodeURIComponent(opportunity.market_id)}`}
           className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ccff00] px-5 text-sm font-black text-black focus-visible:ring-2 focus-visible:ring-[#ccff00] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           Review &amp; execute with Particle
@@ -147,6 +147,14 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
   const [strategy, setStrategy] = React.useState<AiStrategy | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [riskTolerance, setRiskTolerance] = React.useState<"conservative" | "moderate" | "aggressive">("moderate");
+
+  React.useEffect(() => {
+    const savedMode = window.localStorage.getItem("mom3-risk-tolerance");
+    if (savedMode === "conservative" || savedMode === "moderate" || savedMode === "aggressive") {
+      setRiskTolerance(savedMode);
+    }
+  }, []);
 
   const load = React.useCallback(async () => {
     setIsLoading(true);
@@ -154,7 +162,7 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
       const response = await fetch("/api/ai/strategy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ risk_tolerance: "moderate" }),
+        body: JSON.stringify({ risk_tolerance: riskTolerance }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "Strategy unavailable.");
@@ -165,7 +173,7 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [riskTolerance]);
 
   React.useEffect(() => { void load(); }, [load]);
 

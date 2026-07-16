@@ -48,7 +48,7 @@ async function readHistoricalChart(market: NonNullable<ReturnType<typeof getAave
 
 export async function GET(request: Request) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_MOM3_BACKEND_URL;
+    const backendUrl = process.env.MOM3_BACKEND_URL || process.env.NEXT_PUBLIC_MOM3_BACKEND_URL;
     if (backendUrl) {
       const incoming = new URL(request.url);
       const upstream = new URL("/api/market/aave", backendUrl);

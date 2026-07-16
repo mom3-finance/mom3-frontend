@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 /**
  * POST /api/ai/chat
  * Proxies the chat to the mom3 agentkit (LLM-powered, context-aware) when
- * MOM3_AGENTKIT_URL is set. Falls back to a canned reply otherwise so the chat
+ * MOM3_BACKEND_URL is set. Falls back to a canned reply otherwise so the chat
  * UI never breaks in a degraded/dev-without-backend state.
  *
  * Body: { message: string, history?: {role, content}[], chainId?: number, userAddress?: string }
@@ -17,10 +17,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Message is required." }, { status: 400 });
   }
 
-  const agentkitUrl = process.env.MOM3_AGENTKIT_URL;
-  if (agentkitUrl) {
+  const backendUrl = process.env.MOM3_BACKEND_URL || process.env.NEXT_PUBLIC_MOM3_BACKEND_URL;
+  if (backendUrl) {
     try {
-      const agentResponse = await fetch(`${agentkitUrl}/api/chat`, {
+      const agentResponse = await fetch(`${backendUrl}/api/ai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   // Degraded mode: no backend configured. Surface a clear, honest reply.
   return NextResponse.json({
     reply:
-      "Live AI chat needs the agentkit service running. Set MOM3_AGENTKIT_URL and start the agentkit server to enable real responses.",
+      "Live AI chat needs the backend service running. Set MOM3_BACKEND_URL and start the backend server to enable real responses.",
     context_used: { yield_data: false, liquidity_data: false, user_portfolio: false },
     model: "local-fallback",
   });

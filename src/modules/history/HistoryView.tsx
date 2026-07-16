@@ -183,7 +183,7 @@ export default function HistoryView() {
                       transition={{ delay: index * 0.05 }}
                     >
                       <Link
-                        href={`/history/${item.id}`}
+                        href={`/history/${encodeURIComponent(item.id)}`}
                         className={cn(
                           "flex min-h-[78px] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-[#3B33BD]",
                           index < activeItems.length - 1 && "border-b border-white/5"

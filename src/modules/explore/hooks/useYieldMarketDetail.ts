@@ -96,23 +96,20 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
     if (!marketId) return;
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (seed.chainId) params.set("chainId", String(seed.chainId));
-      const response = await fetch(`/api/ai/markets?${params.toString()}`, { cache: "no-store" });
+      const response = await fetch(`/api/ai/markets/${encodeURIComponent(marketId)}`, { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail || payload.error || "Live market data is unavailable.");
-      const markets: CatalogMarket[] = Array.isArray(payload.markets) ? payload.markets : [];
-      const live = markets.find((item) => item.market_id === marketId || item.pool_id === marketId);
+      const live: CatalogMarket | null = payload.market && typeof payload.market === "object" ? payload.market : null;
       if (!live) throw new Error("This pool is no longer present in the live market catalog.");
 
       let executionEnabled = false;
       try {
-        const allowlistResponse = await fetch("/api/ai/execution-markets", { cache: "no-store" });
-        const allowlistPayload = await allowlistResponse.json().catch(() => ({}));
-        const allowlistedMarkets = Array.isArray(allowlistPayload.markets) ? allowlistPayload.markets : [];
-        executionEnabled = allowlistResponse.ok && allowlistedMarkets.some(
-          (item: { marketId?: string }) => item.marketId === marketId,
+        const allowlistResponse = await fetch(
+          `/api/ai/execution-markets/${encodeURIComponent(marketId)}`,
+          { cache: "no-store" },
         );
+        const allowlistPayload = await allowlistResponse.json().catch(() => ({}));
+        executionEnabled = allowlistResponse.ok && allowlistPayload.allowlisted === true;
       } catch {
         // Execution stays disabled when the backend policy cannot be verified.
       }
@@ -122,9 +119,7 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
       let apyChart = emptyChart();
       let tvlChart = emptyChart();
       try {
-        const chartResponse = await fetch(`/api/ai/markets/${encodeURIComponent(marketId)}/chart`, { cache: "no-store" });
-        const chartPayload = await chartResponse.json();
-        const points = Array.isArray(chartPayload.points) ? chartPayload.points : [];
+        const points = Array.isArray(payload.chart) ? payload.chart : [];
         const ordered = points
           .map((point: { timestamp?: string; apy?: number; tvlUsd?: number }) => ({
             timestamp: new Date(point.timestamp || 0).getTime(),
