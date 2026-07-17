@@ -6,10 +6,7 @@ import {
 } from "@particle-network/universal-account-sdk";
 
 import {
-  addressBook,
-  recentRecipients,
   receiveTokenTemplates,
-  scannedRecipient,
   ZERO_ADDRESS,
 } from "@/modules/send/constants/send.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
@@ -386,11 +383,24 @@ export function matchesRecipient(recipient: Recipient, query: string) {
   );
 }
 
-export function resolveRecipient(query: string): Recipient | null {
+export function createExternalRecipient(address: string): Recipient {
+  const isSolana = isValidSolanaAddress(address);
+  return {
+    id: `external-${address}`,
+    handle: "Wallet address",
+    name: "External wallet",
+    address,
+    network: isSolana ? "Solana" : "EVM",
+    status: "External",
+    color: "from-[#1C1C1E] to-[#3B33BD]",
+  };
+}
+
+export function resolveRecipient(query: string, candidates: Recipient[] = []): Recipient | null {
   const trimmed = query.trim();
   if (!trimmed) return null;
 
-  const known = [...addressBook, ...recentRecipients].find((recipient) => {
+  const known = candidates.find((recipient) => {
     return (
       recipient.handle.toLowerCase() === trimmed.toLowerCase() ||
       recipient.handle.toLowerCase().includes(trimmed.toLowerCase()) ||
@@ -401,14 +411,7 @@ export function resolveRecipient(query: string): Recipient | null {
   if (known) return known;
 
   if (isValidAddress(trimmed) || isValidSolanaAddress(trimmed)) {
-    return {
-      ...scannedRecipient,
-      id: "typed-address",
-      handle: "Wallet address",
-      name: "External wallet",
-      address: trimmed,
-      network: isValidSolanaAddress(trimmed) ? "Solana" : "EVM",
-    };
+    return createExternalRecipient(trimmed);
   }
 
   return null;
