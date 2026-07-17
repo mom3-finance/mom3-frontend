@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CHAIN_ID } from "@particle-network/universal-account-sdk";
 import { CheckCircle, ExternalLink } from "lucide-react";
 
 import { AppIcon } from "@/components/ui/app-icon";
@@ -19,19 +18,18 @@ import { formatUsd } from "@/lib/format";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { useUniversalTransactionStatus } from "@/providers/universal-account/hooks/useUniversalTransactionStatus";
 import { useParticleTrade } from "./hooks/useParticleTrade";
+import { depositNetworks, getDepositAssetsForChain } from "@/modules/deposit/constants/deposit.constants";
 
-const targetNetworks = [
-  { chainId: CHAIN_ID.BASE_MAINNET, label: "Base", icon: "token-branded:base" },
-  { chainId: CHAIN_ID.ARBITRUM_MAINNET_ONE, label: "Arbitrum", icon: "token-branded:arbitrum" },
-  { chainId: CHAIN_ID.SOLANA_MAINNET, label: "Solana", icon: "token-branded:solana" },
-] as const;
+const targetNetworks = depositNetworks
+  .filter((network) => getDepositAssetsForChain(network.chainId).some((asset) => asset.symbol === "USDC"))
+  .map((network) => ({ chainId: network.chainId, label: network.shortName, icon: network.icon }));
 
 export default function ConvertView() {
   const { primaryAssets, isLoading: isAccountLoading } = useUniversalAccount();
   const trade = useParticleTrade();
   const transactionStatus = useUniversalTransactionStatus(trade.transactionId);
   const [amount, setAmount] = React.useState("");
-  const [targetChainId, setTargetChainId] = React.useState<number>(CHAIN_ID.SOLANA_MAINNET);
+  const [targetChainId, setTargetChainId] = React.useState<number>(targetNetworks[0]?.chainId ?? 101);
   const numericAmount = Number(amount);
   const amountIsValid = Number.isFinite(numericAmount) && numericAmount > 0;
   const unifiedBalance = Number(primaryAssets?.totalAmountInUSD ?? 0);

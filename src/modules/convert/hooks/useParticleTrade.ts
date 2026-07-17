@@ -18,7 +18,7 @@ export type ConvertRequest = {
 };
 
 export function useParticleTrade() {
-  const { universalAccount, signAndSend, refreshAccount } = useUniversalAccount();
+  const { universalAccount, ensureDelegated, signAndSend, refreshAccount } = useUniversalAccount();
   const [status, setStatus] = React.useState<TradeStatus>("idle");
   const [error, setError] = React.useState<string | null>(null);
   const [transactionId, setTransactionId] = React.useState<string | null>(null);
@@ -39,6 +39,7 @@ export function useParticleTrade() {
       setStatus("preparing");
 
       try {
+        if (request.chainId !== 101) await ensureDelegated(request.chainId);
         const particleTransaction = await universalAccount.createConvertTransaction({
           expectToken: {
             type: SUPPORTED_TOKEN_TYPE.USDC,
@@ -66,7 +67,7 @@ export function useParticleTrade() {
         return null;
       }
     },
-    [universalAccount],
+    [ensureDelegated, universalAccount],
   );
 
   const execute = React.useCallback(
