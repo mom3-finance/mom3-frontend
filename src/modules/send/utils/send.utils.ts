@@ -341,6 +341,14 @@ export function getSendErrorMessage(cause: unknown) {
     return "Your wallet needs a one-time network upgrade before this payment can be sent. Complete the upgrade and try again.";
   }
   if (
+    normalized.includes("does not support chain") ||
+    normalized.includes("unsupported chain") ||
+    normalized.includes("no eip-7702 deployment") ||
+    normalized.includes("did not return eip-7702 authorization")
+  ) {
+    return "This network is not available for this Universal Account action. Choose another supported network.";
+  }
+  if (
     normalized.includes("timeout") ||
     normalized.includes("network error") ||
     normalized.includes("failed to fetch") ||

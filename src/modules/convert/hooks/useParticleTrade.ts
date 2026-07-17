@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import {
+  CHAIN_ID,
   SUPPORTED_TOKEN_TYPE,
   type ITransaction,
 } from "@particle-network/universal-account-sdk";
 
 import { getSendErrorMessage } from "@/modules/send/utils/send.utils";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
+import { isParticleExecutionChainId } from "@/providers/shared/constants/chain.constants";
 import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 
 export type TradeStatus = "idle" | "preparing" | "signing" | "success" | "error";
@@ -39,7 +41,13 @@ export function useParticleTrade() {
       setStatus("preparing");
 
       try {
-        if (request.chainId !== 101) await ensureDelegated(request.chainId);
+        if (!isParticleExecutionChainId(request.chainId)) {
+          throw new Error(`Particle Universal Account does not support chain ${request.chainId}.`);
+        }
+
+        if (request.chainId !== CHAIN_ID.SOLANA_MAINNET) {
+          await ensureDelegated(request.chainId);
+        }
         const particleTransaction = await universalAccount.createConvertTransaction({
           expectToken: {
             type: SUPPORTED_TOKEN_TYPE.USDC,

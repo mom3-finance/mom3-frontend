@@ -17,10 +17,9 @@ import { formatUsd } from "@/lib/format";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { useUniversalTransactionStatus } from "@/providers/universal-account/hooks/useUniversalTransactionStatus";
 import { useParticleTrade } from "./hooks/useParticleTrade";
-import { depositNetworks, getDepositAssetsForChain } from "@/modules/deposit/constants/deposit.constants";
+import { convertNetworks } from "@/modules/deposit/constants/deposit.constants";
 
-const targetNetworks = depositNetworks
-  .filter((network) => getDepositAssetsForChain(network.chainId).some((asset) => asset.symbol === "USDC"))
+const targetNetworks = convertNetworks
   .map((network) => ({ chainId: network.chainId, label: network.shortName, icon: network.icon }));
 
 export default function ConvertView() {
