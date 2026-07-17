@@ -428,7 +428,7 @@ export default function ExploreView() {
                   type="button"
                   aria-pressed={active}
                   onClick={() => setSelectedProtocol(protocol.id)}
-                  className={cn("flex min-h-12 shrink-0 items-center gap-2 rounded-2xl border px-3 transition-colors focus-visible:ring-2 focus-visible:ring-[#ccff00]", active ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]" : "border-white/10 bg-[#1C1C1E] text-white hover:bg-[#252529]")}
+                  className={cn("flex min-h-12 shrink-0 items-center gap-2 rounded-2xl border px-3 transition-colors focus-visible:ring-2 focus-visible:ring-[#ccff00]", active ? "border-[#ccff00]/30 bg-[#ccff00]/10 text-[#ccff00]" : "border-white/10 bg-[#1C1C1E] text-white hover:bg-[#252529]")}
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2A2A3E]"><ProtocolLogo protocol={protocol.name} /></span>
                   <span className="text-xs font-black">{protocol.name}</span>
