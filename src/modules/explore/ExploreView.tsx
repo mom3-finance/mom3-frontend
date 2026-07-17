@@ -150,6 +150,7 @@ const exploreFeatureCards = [
 ];
 
 const EXPLORE_PROTOCOLS = [
+  { id: "all", name: "All protocols" },
   { id: "aave-v3", name: "Aave V3" },
   { id: "compound-v3", name: "Compound V3" },
   { id: "morpho-blue", name: "Morpho" },
@@ -291,7 +292,7 @@ export default function ExploreView() {
   const [query, setQuery] = React.useState("");
   const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
   const [chainFilter, setChainFilter] = React.useState<ChainFilter>("All");
-  const [selectedProtocol, setSelectedProtocol] = React.useState<string>(EXPLORE_PROTOCOLS[0].id);
+  const [selectedProtocol, setSelectedProtocol] = React.useState<string>("all");
   const { yieldPools, riskPools, isLoading, error } = useExploreYields(selectedProtocol);
 
   const filteredYield = React.useMemo(

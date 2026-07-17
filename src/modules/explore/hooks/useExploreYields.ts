@@ -138,8 +138,8 @@ export function useExploreYields(selectedProtocol?: string) {
         if (Array.isArray(marketSnapshot?.markets) && !selectedProtocol) {
           markets = marketSnapshot.markets as YieldMarketEntry[];
         } else {
-          const params = new URLSearchParams({ limit: "10", offset: "0", execution_only: "true" });
-          if (selectedProtocol) params.set("protocol", selectedProtocol);
+          const params = new URLSearchParams({ limit: "10", offset: "0" });
+          if (selectedProtocol && selectedProtocol !== "all") params.set("protocol", selectedProtocol);
           const catalogResponse = await fetch(`/api/ai/markets?${params.toString()}`, { cache: "no-store" });
           const catalogPayload = await catalogResponse.json().catch(() => ({}));
           if (!catalogResponse.ok) {
@@ -159,7 +159,7 @@ export function useExploreYields(selectedProtocol?: string) {
           // Pulse enriches risk labels but is not required for market discovery.
         }
 
-        for (const market of markets.filter((item) => item.execution?.enabled === true)) {
+        for (const market of markets.filter((item) => item.ua_supported !== false)) {
           const protocol = String(market.protocol || "Unknown protocol");
           const symbol = String(market.symbol || "Yield pool");
           const chainId = Number(market.chain_id ?? 0);
