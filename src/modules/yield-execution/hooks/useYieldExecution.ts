@@ -74,7 +74,10 @@ export function useYieldExecution(action: YieldAction) {
       setStatus("idle");
       return nextTransaction;
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : `We couldn't prepare this ${action}.`);
+      const message = cause instanceof Error ? cause.message : `We couldn't prepare this ${action}.`;
+      setError(/delegat|eip.?7702|universal account/i.test(message)
+        ? "Your Universal Account is not delegated on this chain. Complete delegation, then review the supply again."
+        : message);
       setStatus("error");
       return null;
     }
