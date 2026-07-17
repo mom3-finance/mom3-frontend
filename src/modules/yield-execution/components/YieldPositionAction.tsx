@@ -11,11 +11,9 @@ import { Typography } from "@/components/ui/typography";
 import { formatTokenBalance, formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
-  getFeeBreakdownRows,
-  getFeeTokenRows,
   getFundingRows,
-  getTotalFeeLabel,
 } from "@/modules/send/utils/send.utils";
+import { getFeeBreakdownRows, getFeeTokenRows, getTotalFeeLabel } from "@/providers/universal-account/services/gas-fee.service";
 import { useYieldExecution } from "@/modules/yield-execution/hooks/useYieldExecution";
 import { useYieldPosition } from "@/modules/yield-execution/hooks/useYieldPosition";
 import type { YieldAction } from "@/modules/yield-execution/types/yield-execution.types";
