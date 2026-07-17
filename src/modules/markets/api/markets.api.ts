@@ -46,5 +46,17 @@ export function getMarkets(params: MarketListParams = {}) {
 }
 
 export function getMarketDetail(marketId: string) {
-  return apiFetch<{ market?: any; chart?: Array<{ timestamp?: string; apy?: number; tvlUsd?: number }>; timestamp?: string }>(`/api/ai/markets/${encodeURIComponent(marketId)}`);
+  return apiFetch<{ market?: any; timestamp?: string }>(`/api/ai/markets/${encodeURIComponent(marketId)}`);
+}
+
+export function getMarketHistory(marketId: string, range = "30d") {
+  return apiFetch<{ points?: Array<{ capturedAt?: string; timestamp?: string; apy?: number; tvlUsd?: number }> }>(
+    `/api/ai/markets/${encodeURIComponent(marketId)}/chart?range=${encodeURIComponent(range)}`,
+  );
+}
+
+export function getMarketMetrics(marketId: string) {
+  return apiFetch<{ metrics?: Record<string, number | string | null> }>(
+    `/api/ai/markets/${encodeURIComponent(marketId)}/metrics`,
+  );
 }

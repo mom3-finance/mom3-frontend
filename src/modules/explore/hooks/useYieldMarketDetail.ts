@@ -6,7 +6,7 @@ import { formatUsdValue } from "@/lib/format";
 import type { MarketDetail, Risk } from "@/lib/portfolio-data";
 import type { TimeRange } from "@/components/ui/mini-chart";
 import { useRealtime } from "@/providers/realtime/components/RealtimeProvider";
-import { getMarketDetail } from "@/modules/markets/api/markets.api";
+import { getMarketDetail, getMarketHistory, getMarketMetrics } from "@/modules/markets/api/markets.api";
 
 type CatalogMarket = {
   market_id?: string;
@@ -100,6 +100,8 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
       const payload = await getMarketDetail(marketId);
       const live: CatalogMarket | null = payload.market && typeof payload.market === "object" ? payload.market : null;
       if (!live) throw new Error("This pool is no longer present in the live market catalog.");
+      const metricsPayload = await getMarketMetrics(marketId);
+      const metrics = metricsPayload.metrics || {};
 
       let executionEnabled = live.execution?.enabled === true;
       try {
@@ -113,15 +115,16 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         // Execution stays disabled when the backend policy cannot be verified.
       }
 
-      const apy = Number(live.apy || 0);
-      const riskScore = Number(live.risk_score || 5);
+      const apy = Number(metrics.apy ?? live.apy ?? 0);
+      const riskScore = Number(metrics.risk_score ?? live.risk_score ?? 5);
       let apyChart = emptyChart();
       let tvlChart = emptyChart();
       try {
-        const points = Array.isArray(payload.chart) ? payload.chart : [];
+        const historyPayload = await getMarketHistory(marketId, "30d");
+        const points = Array.isArray(historyPayload.points) ? historyPayload.points : [];
         const ordered = points
-          .map((point: { timestamp?: string; apy?: number; tvlUsd?: number }) => ({
-            timestamp: new Date(point.timestamp || 0).getTime(),
+          .map((point: { capturedAt?: string; timestamp?: string; apy?: number; tvlUsd?: number }) => ({
+            timestamp: new Date(point.capturedAt || point.timestamp || 0).getTime(),
             apy: Number(point.apy),
             tvl: Number(point.tvlUsd),
           }))
@@ -149,13 +152,13 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         source: live.source || "defillama-live",
         lastUpdated: payload.timestamp || new Date().toISOString(),
         executionEnabled,
-        apyBase: Number(live.apy_base ?? 0),
-        apyReward: Number(live.apy_reward ?? 0),
-        change1d: Number(live.apy_change_1d ?? 0),
-        change7d: Number(live.apy_change_7d ?? 0),
-        change30d: Number(live.apy_change_30d ?? 0),
+        apyBase: Number(metrics.apy_base ?? live.apy_base ?? 0),
+        apyReward: Number(metrics.apy_reward ?? live.apy_reward ?? 0),
+        change1d: Number(metrics.apy_change_1d ?? live.apy_change_1d ?? 0),
+        change7d: Number(metrics.apy_change_7d ?? live.apy_change_7d ?? 0),
+        change30d: Number(metrics.apy_change_30d ?? live.apy_change_30d ?? 0),
         riskScore,
-        opportunityScore: Number(live.opportunity_score ?? 0),
+        opportunityScore: Number(metrics.opportunity_score ?? live.opportunity_score ?? 0),
         predictionClass: live.prediction?.class || null,
         predictionProbability: Number(live.prediction?.probability ?? 0),
         stablecoin: live.stablecoin ?? null,
@@ -172,7 +175,7 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         assetAddress: live.execution?.asset_address || null,
         assetDecimals: live.execution?.asset_decimals ?? null,
         sourceUrl: live.source_url || null,
-        currentTvl: Number(live.tvl ?? 0),
+        currentTvl: Number(metrics.tvl ?? live.tvl ?? 0),
         tvlChart,
       });
       setError(null);
