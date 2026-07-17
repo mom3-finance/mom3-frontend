@@ -119,7 +119,7 @@ function rankingScore(apy: number, tvl: number, riskScore: number, opportunitySc
  * Real cross-chain yield pools curated by Agentkit. The catalog owns protocol
  * discovery and the execution flag, so every card keeps its canonical market ID.
  */
-export function useExploreYields() {
+export function useExploreYields(selectedProtocol?: string) {
   const { marketRevision, marketSnapshot } = useRealtime();
   const [pools, setPools] = React.useState<ExploreYieldPool[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -135,10 +135,12 @@ export function useExploreYields() {
       try {
         const built: ExploreYieldPool[] = [];
         let markets: YieldMarketEntry[];
-        if (Array.isArray(marketSnapshot?.markets)) {
+        if (Array.isArray(marketSnapshot?.markets) && !selectedProtocol) {
           markets = marketSnapshot.markets as YieldMarketEntry[];
         } else {
-          const catalogResponse = await fetch("/api/ai/markets", { cache: "no-store" });
+          const params = new URLSearchParams({ limit: "10", offset: "0" });
+          if (selectedProtocol) params.set("protocol", selectedProtocol);
+          const catalogResponse = await fetch(`/api/ai/markets?${params.toString()}`, { cache: "no-store" });
           const catalogPayload = await catalogResponse.json().catch(() => ({}));
           if (!catalogResponse.ok) {
             throw new Error(catalogPayload.detail || catalogPayload.error || "Unable to load yield markets.");
@@ -214,7 +216,7 @@ export function useExploreYields() {
     return () => {
       cancelled = true;
     };
-  }, [marketRevision, marketSnapshot]);
+  }, [marketRevision, marketSnapshot, selectedProtocol]);
 
   const yieldPools = pools.filter((p) => p.category === "Yield");
   const riskPools = pools.filter((p) => p.category === "Risk");
