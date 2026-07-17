@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MiniChart } from "@/components/ui/mini-chart";
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { Typography } from "@/components/ui/typography";
+import { fallbackOpportunities } from "./components/StrategyResponse";
 import type { AiStrategy, StrategyOpportunity } from "./types/ai.types";
 
 export type StrategySelection = {
@@ -179,8 +180,13 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
   React.useEffect(() => { void load(); }, [load]);
 
   const selectedOpportunity = React.useMemo(() => {
-    if (!strategy?.opportunities) return null;
-    const opportunities = strategy.opportunities;
+    if (!strategy) return null;
+    const opportunities = Array.from(
+      new Map(
+        [...(strategy.opportunities ?? []), ...fallbackOpportunities(strategy)]
+          .map((item) => [item.market_id || `${item.protocol}:${item.chain_id}:${item.pool}`, item] as const),
+      ).values(),
+    );
     if (selection?.marketId) {
       const byMarketId = opportunities.find((item) => item.market_id === selection.marketId);
       if (byMarketId) return byMarketId;
