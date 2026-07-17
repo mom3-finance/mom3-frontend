@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import * as React from "react";
 
 import { AppIcon } from "@/components/ui/app-icon";
@@ -203,9 +204,18 @@ export function YieldPositionAction({
           </div>
         ) : null}
         <div className={cn("mt-3 grid gap-3", hasPosition ? "grid-cols-2" : "grid-cols-1")}>
-          <Button type="button" color="primary" size="lg" rounded="full" fullWidth label="Supply" startIcon="solar:upload-minimalistic-bold" isDisabled={universalAssetBalance <= 0} onClick={() => setMode("supply")} />
+          <Button type="button" color="primary" size="lg" rounded="full" fullWidth label="Supply" startIcon="solar:upload-minimalistic-bold" onClick={() => setMode("supply")} />
           {hasPosition ? <Button type="button" color="dark" size="lg" rounded="full" fullWidth label="Withdraw" startIcon="solar:download-minimalistic-bold" onClick={() => setMode("withdraw")} /> : null}
         </div>
+        {universalAssetBalance <= 0 ? (
+          <Link
+            href={`/deposit?chainId=${chainId}&asset=${encodeURIComponent(assetSymbol)}`}
+            className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#ccff00]/30 bg-[#ccff00]/10 px-4 text-sm font-black text-[#ccff00] focus-visible:ring-2 focus-visible:ring-[#ccff00]"
+          >
+            Deposit {assetSymbol}
+            <AppIcon icon="lucide:arrow-right" aria-hidden="true" width={16} height={16} />
+          </Link>
+        ) : null}
       </section>
     );
   }
