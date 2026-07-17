@@ -6,11 +6,7 @@ import * as React from "react";
 
 import { CHAIN_ID } from "@particle-network/universal-account-sdk";
 
-import {
-  addressBook,
-  recentRecipients,
-  scannedRecipient,
-} from "@/modules/send/constants/send.constants";
+import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
 import type { Recipient, SendPreview, SendStatus, TokenRow } from "@/modules/send/types/send.types";
 import {
   findPreferredToken,
@@ -80,11 +76,18 @@ export function useConfirmPaymentState() {
   const [recipient, setRecipient] = React.useState<Recipient | null>(null);
 
   React.useEffect(() => {
-    const resolved = resolveRecipient(to);
-    if (resolved) {
-      setRecipient(resolved);
-    }
-  }, [to]);
+    let cancelled = false;
+    void getRecentRecipients(accountInfo.ownerAddress)
+      .catch(() => [])
+      .then((recentRecipients) => {
+        if (cancelled) return;
+        const resolved = resolveRecipient(to, recentRecipients);
+        if (resolved) setRecipient(resolved);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountInfo.ownerAddress, to]);
 
   const prepareTransaction = React.useCallback(async () => {
     if (!universalAccount || !recipient || !selectedToken) return;
@@ -195,6 +198,7 @@ export function useConfirmPaymentState() {
       const transactionForSubmit = structuredClone(sendPreview.transaction);
       const result = await signAndSend(transactionForSubmit);
       setTransactionId(result.transactionId ?? sendPreview.transaction.transactionId);
+      void saveRecentRecipient(accountInfo.ownerAddress, sendPreview.recipient, sendPreview.token.chainId);
       const account = accountInfo.evmSmartAccount || accountInfo.ownerAddress;
       if (account && universalAccount) {
         void universalAccount.getTransactions(1, 50).then((response: any) => {

@@ -3,11 +3,7 @@
 import * as React from "react";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
-import {
-  recentRecipients,
-  addressBook,
-  scannedRecipient,
-} from "@/modules/send/constants/send.constants";
+import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
 import {
   findPreferredToken,
@@ -28,6 +24,7 @@ export function useSendState(
 ) {
   const {
     universalAccount,
+    accountInfo,
     primaryAssets,
     isLoading,
     error: accountError,
@@ -41,6 +38,7 @@ export function useSendState(
   const [scanOpen, setScanOpen] = React.useState(false);
   const [step, setStep] = React.useState<"recipient" | "token" | "amount">("recipient");
   const [error, setError] = React.useState<string | null>(null);
+  const [recentRecipients, setRecentRecipients] = React.useState<Recipient[]>([]);
   const appliedInitialAsset = React.useRef<string | null>(null);
 
   /* â”€â”€ Derived token rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -69,17 +67,35 @@ export function useSendState(
     selectedToken && initialAsset && matchesAsset(selectedToken, initialAsset, initialChain),
   );
 
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!accountInfo.ownerAddress) {
+      setRecentRecipients([]);
+      return;
+    }
+    void getRecentRecipients(accountInfo.ownerAddress)
+      .then((items) => {
+        if (!cancelled) setRecentRecipients(items);
+      })
+      .catch(() => {
+        if (!cancelled) setRecentRecipients([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountInfo.ownerAddress]);
+
   /* â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
   React.useEffect(() => {
     if (!initialTo) return;
-    const resolved = resolveRecipient(initialTo);
+    const resolved = resolveRecipient(initialTo, recentRecipients);
     if (resolved) {
       setSelectedRecipient(resolved);
       setQuery(resolved.handle.startsWith("@") ? resolved.handle : resolved.address);
       setStep("token");
     }
-  }, [initialTo]);
+  }, [initialTo, recentRecipients]);
 
   React.useEffect(() => {
     if (!selectedRecipient || selectedTokenId || tokenRows.length === 0) return;
@@ -111,17 +127,17 @@ export function useSendState(
   const filteredRecipients = React.useMemo(() => {
     if (!query.trim()) return recentRecipients;
 
-    const combined = [...recentRecipients, ...addressBook].filter(
+    const combined = recentRecipients.filter(
       (recipient, index, self) =>
-        index === self.findIndex((item) => item.handle === recipient.handle),
+        index === self.findIndex((item) => item.address === recipient.address),
     );
     const filtered = combined.filter((recipient) => matchesRecipient(recipient, query));
 
     if (filtered.length > 0) return filtered;
 
-    const resolved = resolveRecipient(query);
+    const resolved = resolveRecipient(query, recentRecipients);
     return resolved ? [resolved] : [];
-  }, [query]);
+  }, [query, recentRecipients]);
 
   const showRecentLabel = !query.trim() && recentRecipients.length > 0;
 
@@ -159,6 +175,11 @@ export function useSendState(
     setError(null);
     setStep("token");
     setQuery(recipient.handle.startsWith("@") ? recipient.handle : recipient.address);
+    setRecentRecipients((current) => [
+      { ...recipient, status: "Recent" as const },
+      ...current.filter((item) => item.address.toLowerCase() !== recipient.address.toLowerCase()),
+    ].slice(0, 20));
+    void saveRecentRecipient(accountInfo.ownerAddress, recipient);
   };
 
   const selectToken = (token: TokenRow) => {
@@ -170,11 +191,11 @@ export function useSendState(
 
   const handleScan = () => {
     setScanOpen(false);
-    selectRecipient(scannedRecipient);
+    setError("QR scanner is not connected yet. Paste a wallet address instead.");
   };
 
   const handleSearchSubmit = () => {
-    const resolved = resolveRecipient(query);
+    const resolved = resolveRecipient(query, recentRecipients);
     if (!resolved) {
       setError("Recipient not found. Enter a valid mom3 tag or wallet address.");
       return;
