@@ -10,7 +10,7 @@ import { Typography } from "@/components/ui/typography";
 import { formatUsdValue } from "@/lib/format";
 import type { MarketDetail } from "@/lib/portfolio-data";
 import { cn } from "@/lib/utils";
-import { DEFAULT_AAVE_CHAIN_ID } from "@/modules/explore/constants/aave.constants";
+import { DEFAULT_AAVE_CHAIN_ID, getAaveMarketConfig } from "@/modules/explore/constants/aave.constants";
 import { useAaveMarket } from "@/modules/explore/hooks/useAaveMarket";
 import { useYieldMarketDetail } from "@/modules/explore/hooks/useYieldMarketDetail";
 import { MarketDetailSkeleton } from "@/modules/market-detail/components/MarketDetailSkeleton";
@@ -33,17 +33,18 @@ export default function MarketDetailView({
   const isAaveUsdcMarket = market.protocol.toLowerCase().includes("aave")
     && market.asset.toUpperCase() === "USDC"
     && market.category === "Yield";
+  const isOnchainAaveMarket = isAaveUsdcMarket && Boolean(getAaveMarketConfig(chainId));
   const aaveMarket = useAaveMarket(
-    isAaveUsdcMarket ? accountInfo.evmSmartAccount || undefined : undefined,
+    isOnchainAaveMarket ? accountInfo.evmSmartAccount || undefined : undefined,
     chainId,
-    isAaveUsdcMarket,
+    isOnchainAaveMarket,
   );
   const tokenRows = React.useMemo(
     () => normalizePrimaryAssetTokens(primaryAssets, true),
     [primaryAssets],
   );
 
-  const liveMarket = isAaveUsdcMarket && aaveMarket.data
+  const liveMarket = isOnchainAaveMarket && aaveMarket.data
     ? {
         ...catalogDetail.market,
         primary: `${aaveMarket.data.apy.toFixed(2)}% APY`,
@@ -55,16 +56,16 @@ export default function MarketDetailView({
       }
     : catalogDetail.market;
   const hasCatalogData = Boolean(catalogDetail.metadata.lastUpdated);
-  const hasAaveData = isAaveUsdcMarket && Boolean(aaveMarket.data);
+  const hasAaveData = isOnchainAaveMarket && Boolean(aaveMarket.data);
   const hasLiveData = hasCatalogData || hasAaveData;
   const isDetailLoading = !hasLiveData
-    && (catalogDetail.isLoading || (isAaveUsdcMarket && aaveMarket.isLoading));
+    && (catalogDetail.isLoading || (isOnchainAaveMarket && aaveMarket.isLoading));
   const detailError = !hasLiveData && !isDetailLoading
-    ? (isAaveUsdcMarket ? aaveMarket.error : null) || catalogDetail.error || "Live market data is unavailable."
+    ? (isOnchainAaveMarket ? aaveMarket.error : null) || catalogDetail.error || "Live market data is unavailable."
     : null;
   const hasApyChart = liveMarket.chartData[range].length > 1;
   const hasTvlChart = catalogDetail.metadata.tvlChart[range].length > 1;
-  const heroTvl = aaveMarket.data && aaveMarket.data.tvl > 0
+  const heroTvl = isOnchainAaveMarket && aaveMarket.data && aaveMarket.data.tvl > 0
     ? formatUsdValue(aaveMarket.data.tvl)
     : catalogDetail.metadata.currentTvl !== null
       ? formatUsdValue(catalogDetail.metadata.currentTvl)
@@ -82,7 +83,7 @@ export default function MarketDetailView({
   async function refreshAll() {
     await Promise.all([
       catalogDetail.refresh(),
-      isAaveUsdcMarket ? aaveMarket.refresh() : Promise.resolve(null),
+      isOnchainAaveMarket ? aaveMarket.refresh() : Promise.resolve(null),
     ]);
   }
 
@@ -98,7 +99,7 @@ export default function MarketDetailView({
         </section>
       ) : (
         <>
-          {catalogDetail.error && !isAaveUsdcMarket ? (
+          {catalogDetail.error && !isOnchainAaveMarket ? (
             <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-red-500/10 px-3 py-2.5" role="alert">
               <p className="text-xs font-semibold text-red-100">{catalogDetail.error}</p>
               <Button type="button" color="danger" size="compact" rounded="full" label="Retry" onClick={() => void catalogDetail.refresh()} />
