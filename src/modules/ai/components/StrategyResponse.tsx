@@ -221,7 +221,9 @@ function OpportunityCard({ opportunity }: { opportunity: StrategyOpportunity }) 
 }
 
 export function StrategyResponse({ strategy }: { strategy?: AiStrategy }) {
-  const pageSize = 10;
+  // Strategy returns a broader risk-filtered candidate set. Keep the first
+  // view compact and let the user progressively reveal more opportunities.
+  const pageSize = 3;
   const [visibleCount, setVisibleCount] = React.useState(pageSize);
   React.useEffect(() => setVisibleCount(pageSize), [strategy?.last_updated, strategy?.risk_score]);
   if (!strategy) return null;
