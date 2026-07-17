@@ -59,6 +59,7 @@ type YieldMarketEntry = {
   impermanent_loss?: boolean | null;
   source?: string;
   trend?: string;
+  ua_supported?: boolean;
   risk_score?: number;
   opportunity_score?: number;
   execution?: { enabled?: boolean };
@@ -138,7 +139,10 @@ export function useExploreYields(selectedProtocol?: string) {
         if (Array.isArray(marketSnapshot?.markets) && !selectedProtocol) {
           markets = marketSnapshot.markets as YieldMarketEntry[];
         } else {
-          const params = new URLSearchParams({ limit: "10", offset: "0" });
+          // Fetch a sufficiently large supported catalog once. The UI still
+          // paginates each protocol section with Show more, while avoiding
+          // the old global limit that left only a couple of Aave/other rows.
+          const params = new URLSearchParams({ limit: "100", offset: "0" });
           if (selectedProtocol && selectedProtocol !== "all") params.set("protocol", selectedProtocol);
           const catalogResponse = await fetch(`/api/ai/markets?${params.toString()}`, { cache: "no-store" });
           const catalogPayload = await catalogResponse.json().catch(() => ({}));
