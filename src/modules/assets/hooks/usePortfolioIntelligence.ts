@@ -22,6 +22,9 @@ export function usePortfolioIntelligence(account: string, tokens: TokenRow[]) {
     enabled: Boolean(account),
     staleTime: 20_000,
     retry: 2,
+    // Market revisions should refresh analysis in the background. Keep the
+    // last complete response visible so the health gauge never flashes to 0.
+    placeholderData: (previousData) => previousData,
     queryFn: async () => {
       const response = await fetch("/api/ai/portfolio", {
         method: "POST",
