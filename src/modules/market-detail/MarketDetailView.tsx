@@ -73,7 +73,10 @@ export default function MarketDetailView({
   const universalAssetBalance = tokenRows
     .filter((token) => token.symbol.toUpperCase() === executionAssetSymbol.toUpperCase())
     .reduce((total, token) => total + token.balance, 0);
-  const canExecuteYield = Boolean(executionMarketId) && catalogDetail.metadata.executionEnabled;
+  // Keep the action panel visible for every canonical market detail. The
+  // Backend remains the execution policy gate; a delayed allowlist response
+  // must not make the Supply/Withdraw controls disappear from the UI.
+  const canExecuteYield = Boolean(executionMarketId);
   const tone = liveMarket.risk === "High" ? "red" : liveMarket.risk === "Medium" ? "yellow" : "green";
 
   async function refreshAll() {
