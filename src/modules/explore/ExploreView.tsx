@@ -146,6 +146,13 @@ const exploreFeatureCards = [
   },
 ];
 
+const EXPLORE_PROTOCOLS = [
+  { id: "aave-v3", name: "Aave V3" },
+  { id: "compound-v3", name: "Compound V3" },
+  { id: "morpho-blue", name: "Morpho" },
+  { id: "kamino-lend", name: "Kamino" },
+] as const;
+
 function matchesMarket(item: MarketItem, query: string) {
   const normalized = query.toLowerCase();
   return (
@@ -281,7 +288,8 @@ export default function ExploreView() {
   const [query, setQuery] = React.useState("");
   const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
   const [categoryFilter, setCategoryFilter] = React.useState<MarketCategoryFilter>("All");
-  const { yieldPools, riskPools, isLoading, error } = useExploreYields();
+  const [selectedProtocol, setSelectedProtocol] = React.useState(EXPLORE_PROTOCOLS[0].id);
+  const { yieldPools, riskPools, isLoading, error } = useExploreYields(selectedProtocol);
 
   const showYield = categoryFilter === "All" || categoryFilter === "Yield";
   const showRisk = categoryFilter === "All" || categoryFilter === "Risk";
@@ -405,6 +413,30 @@ export default function ExploreView() {
             <span className="h-2 w-2 rounded-full bg-[#242620]" />
           </div>
         </motion.section>
+
+        <section className="mt-4" aria-label="Protocols">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-black text-white">Protocols</h2>
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#777780]">Select to load markets</span>
+          </div>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {EXPLORE_PROTOCOLS.map((protocol) => {
+              const active = selectedProtocol === protocol.id;
+              return (
+                <button
+                  key={protocol.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelectedProtocol(protocol.id)}
+                  className={cn("flex min-h-12 shrink-0 items-center gap-2 rounded-2xl border px-3 transition-colors focus-visible:ring-2 focus-visible:ring-[#ccff00]", active ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]" : "border-white/10 bg-[#1C1C1E] text-white hover:bg-[#252529]")}
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2A2A3E]"><ProtocolLogo protocol={protocol.name} /></span>
+                  <span className="text-xs font-black">{protocol.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         {isLoading ? (
           <>
