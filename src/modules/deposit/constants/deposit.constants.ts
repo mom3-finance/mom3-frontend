@@ -1,4 +1,7 @@
-import { SUPPORTED_PRIMARY_TOKENS } from "@particle-network/universal-account-sdk";
+import {
+  SUPPORTED_PRIMARY_TOKENS,
+  UNIVERSAL_ACCOUNT_VERSION_V2_SUPPORTED_CHAIN_IDS,
+} from "@particle-network/universal-account-sdk";
 
 import type {
   DepositAsset,
@@ -7,7 +10,13 @@ import type {
 import { chainBadgeIconFromId, chainNameFromId, tokenIcon } from "@/lib/chain";
 
 const particleChainIds = Array.from(
-  new Set(SUPPORTED_PRIMARY_TOKENS.map((token) => Number(token.chainId))),
+  new Set(
+    SUPPORTED_PRIMARY_TOKENS
+      .map((token) => Number(token.chainId))
+      .filter((chainId) =>
+        UNIVERSAL_ACCOUNT_VERSION_V2_SUPPORTED_CHAIN_IDS.map(Number).includes(chainId),
+      ),
+  ),
 );
 
 export const depositNetworks: DepositNetwork[] = particleChainIds
@@ -55,3 +64,10 @@ export const depositAssets: DepositAsset[] = SUPPORTED_PRIMARY_TOKENS.map((token
 export function getDepositAssetsForChain(chainId: number) {
   return depositAssets.filter((asset) => asset.chainId === chainId);
 }
+
+// Convert is intentionally limited to networks where Particle supports both
+// Universal Account v2 and a USDC destination asset. This prevents showing a
+// network that the SDK can execute on but cannot quote for this conversion.
+export const convertNetworks: DepositNetwork[] = depositNetworks.filter((network) =>
+  getDepositAssetsForChain(network.chainId).some((asset) => asset.symbol === "USDC"),
+);
