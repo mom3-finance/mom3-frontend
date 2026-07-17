@@ -1,37 +1,28 @@
-import {
-  CHAIN_ID,
-  SUPPORTED_PRIMARY_TOKENS,
-} from "@particle-network/universal-account-sdk";
+import { SUPPORTED_PRIMARY_TOKENS } from "@particle-network/universal-account-sdk";
 
 import type {
   DepositAsset,
   DepositNetwork,
 } from "@/modules/deposit/types/deposit.types";
-import { tokenIcon } from "@/lib/chain";
+import { chainBadgeIconFromId, chainNameFromId, tokenIcon } from "@/lib/chain";
 
-export const depositNetworks: DepositNetwork[] = [
-  {
-    chainId: CHAIN_ID.ARBITRUM_MAINNET_ONE,
-    name: "Arbitrum One",
-    shortName: "Arbitrum",
-    kind: "evm",
-    icon: "token-branded:arbitrum",
-  },
-  {
-    chainId: CHAIN_ID.BASE_MAINNET,
-    name: "Base",
-    shortName: "Base",
-    kind: "evm",
-    icon: "token-branded:base",
-  },
-  {
-    chainId: CHAIN_ID.SOLANA_MAINNET,
-    name: "Solana",
-    shortName: "Solana",
-    kind: "solana",
-    icon: "token-branded:solana",
-  },
-];
+const particleChainIds = Array.from(
+  new Set(SUPPORTED_PRIMARY_TOKENS.map((token) => Number(token.chainId))),
+);
+
+export const depositNetworks: DepositNetwork[] = particleChainIds
+  .sort((left, right) => {
+    const order = [8453, 42161, 1, 56, 101];
+    return (order.indexOf(left) < 0 ? 99 : order.indexOf(left))
+      - (order.indexOf(right) < 0 ? 99 : order.indexOf(right));
+  })
+  .map((chainId) => ({
+    chainId,
+    name: chainNameFromId(chainId),
+    shortName: chainNameFromId(chainId).replace(" One", ""),
+    kind: chainId === 101 ? "solana" : "evm",
+    icon: chainBadgeIconFromId(chainId),
+  }));
 
 const tokenNames: Record<string, string> = {
   ETH: "Ether",
