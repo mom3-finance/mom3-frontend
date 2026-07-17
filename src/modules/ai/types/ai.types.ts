@@ -30,11 +30,13 @@ export type AiStrategy = {
   scanned_chains?: number[];
   allocations?: Record<string, number>;
   chain_allocations?: Array<{
+    market_id?: string;
     protocol: string;
     chain_id: number;
     allocation: number;
     expected_apy: number;
     risk_score: number;
+    execution_ready?: boolean;
   }>;
   opportunities?: StrategyOpportunity[];
   diversification_score?: number;

@@ -91,7 +91,7 @@ function MarketIdentity({ opportunity }: { opportunity: StrategyOpportunity }) {
   );
 }
 
-function fallbackOpportunities(strategy: AiStrategy): StrategyOpportunity[] {
+export function fallbackOpportunities(strategy: AiStrategy): StrategyOpportunity[] {
   return (strategy.chain_allocations ?? []).map((row) => {
     const pulse = strategy.liquidity_pulse?.find((item) => item.protocol === row.protocol);
     const forecast = strategy.forecast?.find(
@@ -99,6 +99,8 @@ function fallbackOpportunities(strategy: AiStrategy): StrategyOpportunity[] {
     );
 
     return {
+      market_id: row.market_id,
+      pool_id: row.market_id,
       protocol: row.protocol,
       pool: strategy.asset || "Yield pool",
       asset: strategy.asset || "Multi-asset",
@@ -109,6 +111,11 @@ function fallbackOpportunities(strategy: AiStrategy): StrategyOpportunity[] {
       tvl: pulse?.tvl ?? 0,
       risk_score: row.risk_score,
       source: strategy.live_data_source,
+      execution: {
+        enabled: row.execution_ready !== false,
+        actions: ["supply", "withdraw"],
+        requires_user_confirmation: true,
+      },
       forecast,
       liquidity_pulse: pulse,
     };
