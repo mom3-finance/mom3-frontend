@@ -73,7 +73,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           type: "subscribe",
           topics: account ? ["balance", "markets"] : ["markets"],
           account,
-          chainIds: [42161, 8453],
+          chainIds: [1, 10, 56, 101, 137, 143, 146, 169, 196, 500, 999, 1030, 4200, 5000, 8453, 9745, 34443, 42161, 43114, 59144, 80094, 81457],
         }));
       });
 
