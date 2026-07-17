@@ -122,7 +122,7 @@ function rankingScore(apy: number, tvl: number, riskScore: number, opportunitySc
  * discovery and the execution flag, so every card keeps its canonical market ID.
  */
 export function useExploreYields(selectedProtocol?: string) {
-  const { marketRevision, marketSnapshot } = useRealtime();
+  const { marketRevision } = useRealtime();
   const [pools, setPools] = React.useState<ExploreYieldPool[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -137,15 +137,11 @@ export function useExploreYields(selectedProtocol?: string) {
       try {
         const built: ExploreYieldPool[] = [];
         let markets: YieldMarketEntry[];
-        if (Array.isArray(marketSnapshot?.markets) && !selectedProtocol) {
-          markets = marketSnapshot.markets as YieldMarketEntry[];
-        } else {
-          // Fetch a sufficiently large supported catalog once. The UI still
-          // paginates each protocol section with Show more, while avoiding
-          // the old global limit that left only a couple of Aave/other rows.
-          const catalogPayload = await getMarkets({ limit: 100, protocol: selectedProtocol });
-          markets = Array.isArray(catalogPayload.markets) ? catalogPayload.markets as YieldMarketEntry[] : [];
-        }
+        // Realtime snapshots are execution-only and intentionally small. Explore
+        // must use the complete discovery catalog so non-executable markets are
+        // visible while keeping execution as a separate verified capability.
+        const catalogPayload = await getMarkets({ limit: 100, protocol: selectedProtocol });
+        markets = Array.isArray(catalogPayload.markets) ? catalogPayload.markets as YieldMarketEntry[] : [];
         let pulseMap: Record<string, PulseEntry> = {};
         try {
           const pulseResponse = await fetch("/api/ai/pulse", { cache: "no-store" });
@@ -158,7 +154,7 @@ export function useExploreYields(selectedProtocol?: string) {
           // Pulse enriches risk labels but is not required for market discovery.
         }
 
-        for (const market of markets.filter((item) => item.ua_supported !== false)) {
+        for (const market of markets) {
           const protocol = String(market.protocol || "Unknown protocol");
           const symbol = String(market.symbol || "Yield pool");
           const chainId = Number(market.chain_id ?? 0);
@@ -214,7 +210,7 @@ export function useExploreYields(selectedProtocol?: string) {
     return () => {
       cancelled = true;
     };
-  }, [marketRevision, marketSnapshot, selectedProtocol]);
+  }, [marketRevision, selectedProtocol]);
 
   const yieldPools = pools.filter((p) => p.category === "Yield");
   const riskPools = pools.filter((p) => p.category === "Risk");
