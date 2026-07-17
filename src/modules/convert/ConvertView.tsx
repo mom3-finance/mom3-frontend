@@ -9,11 +9,10 @@ import { Button } from "@/components/ui/button";
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { Typography } from "@/components/ui/typography";
 import {
-  getFeeBreakdownRows,
   getFundingRows,
-  getTotalFeeLabel,
   sanitizeAmountInput,
 } from "@/modules/send/utils/send.utils";
+import { getFeeBreakdownRows, getTotalFeeLabel } from "@/providers/universal-account/services/gas-fee.service";
 import { formatUsd } from "@/lib/format";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { useUniversalTransactionStatus } from "@/providers/universal-account/hooks/useUniversalTransactionStatus";

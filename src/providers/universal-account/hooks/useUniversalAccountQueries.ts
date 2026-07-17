@@ -36,9 +36,11 @@ async function isDelegatedOnChain(
   chainId: number,
 ) {
   const deployments = (await universalAccount.getEIP7702Deployments()) as Eip7702Deployment[];
-  return Boolean(
-    deployments.find((deployment) => Number(deployment.chainId) === chainId)?.isDelegated,
-  );
+  const deployment = deployments.find((item) => Number(item.chainId) === chainId);
+  if (!deployment) {
+    throw new Error(`Particle does not provide an EIP-7702 deployment for chain ${chainId}.`);
+  }
+  return deployment.isDelegated === true;
 }
 
 export function useUniversalAccountInstanceQuery(ownerAddress?: string) {
@@ -103,8 +105,13 @@ export function useEnsureDelegatedMutation(
       const [auth] = (await universalAccount.getEIP7702Auth([chainId])) as Eip7702Auth[];
       const authNonce = Number(auth?.nonce);
 
-      if (!auth?.address || !Number.isSafeInteger(authNonce) || authNonce < 0) {
-        throw new Error("Particle returned an invalid EIP-7702 authorization.");
+      if (
+        Number(auth?.chainId) !== chainId ||
+        !auth?.address ||
+        !Number.isSafeInteger(authNonce) ||
+        authNonce < 0
+      ) {
+        throw new Error(`Particle did not return EIP-7702 authorization for chain ${chainId}.`);
       }
 
       // For an explicit Type-4 transaction the EOA is both the transaction

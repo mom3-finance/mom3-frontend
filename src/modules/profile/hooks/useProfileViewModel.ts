@@ -34,7 +34,11 @@ function delegationErrorMessage(error: unknown, chainId: number) {
   const chain = chainNameFromId(chainId);
 
   if (/insufficient funds|have 0 want/i.test(message)) {
-    return `Add a small amount of ${nativeGasToken(chainId)} on ${chain} to pay the EIP-7702 delegation gas, then try again.`;
+    return `Add a small amount of ${nativeGasToken(chainId)} to the owner wallet on ${chain} to pay EIP-7702 delegation gas, then try again.`;
+  }
+
+  if (/does not provide an EIP-7702 deployment|did not return EIP-7702 authorization/i.test(message)) {
+    return `${chain} is available in Particle, but EIP-7702 delegation is not deployed for this chain in the current Particle account configuration.`;
   }
 
   return `EIP-7702 could not be enabled on ${chain}. Check your network and try again.`;
