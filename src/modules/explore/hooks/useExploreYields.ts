@@ -124,13 +124,13 @@ export function useExploreYields(selectedProtocol?: string) {
   const [pools, setPools] = React.useState<ExploreYieldPool[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const hasLoadedRef = React.useRef(false);
 
   React.useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      if (!hasLoadedRef.current) setIsLoading(true);
+      setIsLoading(true);
+      setPools([]);
       setError(null);
       try {
         const built: ExploreYieldPool[] = [];
@@ -203,7 +203,6 @@ export function useExploreYields(selectedProtocol?: string) {
 
         if (!cancelled) {
           setPools(built);
-          hasLoadedRef.current = true;
         }
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause.message : "Unable to load yield markets.");
