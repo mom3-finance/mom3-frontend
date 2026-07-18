@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { AppIcon } from "@/components/ui/app-icon";
 import { Button } from "@/components/ui/button";
@@ -176,10 +177,17 @@ function StrategyDetail({ opportunity, reasoning }: { opportunity: StrategyOppor
 }
 
 export default function AiStrategyView({ selection }: { selection?: StrategySelection }) {
-  const [strategy, setStrategy] = React.useState<AiStrategy | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
   const [riskTolerance, setRiskTolerance] = React.useState<"conservative" | "moderate" | "aggressive">("moderate");
+  const strategyQuery = useQuery<AiStrategy, Error>({
+    queryKey: ["ai", "strategy", riskTolerance],
+    queryFn: async () => {
+      const response = await fetch("/api/ai/strategy", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ risk_tolerance: riskTolerance }) });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.detail || payload.error || "Strategy unavailable.");
+      return payload as AiStrategy;
+    },
+    staleTime: 60_000,
+  });
 
   React.useEffect(() => {
     const savedMode = window.localStorage.getItem("mom3-risk-tolerance");
@@ -188,26 +196,10 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
     }
   }, []);
 
-  const load = React.useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/ai/strategy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ risk_tolerance: riskTolerance }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.detail || payload.error || "Strategy unavailable.");
-      setStrategy(payload as AiStrategy);
-      setError(null);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Strategy unavailable.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [riskTolerance]);
-
-  React.useEffect(() => { void load(); }, [load]);
+  const strategy = strategyQuery.data ?? null;
+  const isLoading = strategyQuery.isPending;
+  const error = strategyQuery.error?.message ?? null;
+  const load = React.useCallback(() => strategyQuery.refetch(), [strategyQuery]);
 
   const selectedOpportunity = React.useMemo(() => {
     if (!strategy) return null;

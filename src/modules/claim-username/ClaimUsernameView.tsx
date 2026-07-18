@@ -10,7 +10,7 @@ import StepIndicator from "./components/step-indicator";
 import ChooseHandle from "./components/choose-handle";
 import ConfirmHandle from "./components/confirm-handle";
 import CompleteView from "./components/complete-view";
-import { claimUsername } from "@/modules/username/api/username.api";
+import { useClaimUsername } from "./hooks/useClaimUsername";
 import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 
 export default function ClaimUsernameView() {
@@ -19,7 +19,7 @@ export default function ClaimUsernameView() {
   const [step, setStep] = useState(1);
   const [handle, setHandle] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isClaiming, setIsClaiming] = useState(false);
+  const claimMutation = useClaimUsername();
 
   const handleBack = useCallback(() => {
     if (step > 1) setStep(step - 1);
@@ -31,16 +31,15 @@ export default function ClaimUsernameView() {
 
   const handleConfirm = useCallback(async () => {
     if (!session?.ownerAddress) return;
-    setIsClaiming(true);
     setError(null);
     try {
       const address = accountInfo.evmSmartAccount || session.ownerAddress;
-      await claimUsername(handle, session.ownerAddress, DEFAULT_CHAIN_ID, address);
+      await claimMutation.mutateAsync({ username: handle, ownerAddress: session.ownerAddress, chainId: DEFAULT_CHAIN_ID, address });
       setStep(3);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to claim username.');
-    } finally { setIsClaiming(false); }
-  }, [accountInfo.evmSmartAccount, handle, session?.ownerAddress]);
+    }
+  }, [accountInfo.evmSmartAccount, claimMutation, handle, session?.ownerAddress]);
 
   const handleViewProfile = useCallback(() => {
     window.location.href = '/dashboard';
@@ -105,7 +104,7 @@ export default function ClaimUsernameView() {
                 handleValue={handle}
                 onBack={handleBack}
                 onConfirm={() => void handleConfirm()}
-                isClaiming={isClaiming}
+                isClaiming={claimMutation.isPending}
                 error={error}
               />
             )}

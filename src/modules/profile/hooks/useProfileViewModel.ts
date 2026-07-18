@@ -15,7 +15,7 @@ import type {
   ProfileIdentityRow,
   UniversalAccountRow,
 } from "@/modules/profile/types/profile.types";
-import { getMyUsername } from "@/modules/username/api/username.api";
+import { getMyUsername } from "@/modules/username/utils/username.api";
 
 function nativeGasToken(chainId: number) {
   if (chainId === 56) return "BNB";

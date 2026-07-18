@@ -24,7 +24,7 @@ import {
 } from "@/modules/send/utils/send.utils";
 import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 import { syncHistory } from "@/modules/history/api/history.api";
-import { resolveUsername } from "@/modules/username/api/username.api";
+import { resolveUsername } from "@/modules/username/utils/username.api";
 
 export function useConfirmPaymentState() {
   const searchParams = useSearchParams();

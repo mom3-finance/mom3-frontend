@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
-import { resolveUsername } from "@/modules/username/api/username.api";
+import { resolveUsername } from "@/modules/username/utils/username.api";
 import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
 import {
@@ -37,11 +38,22 @@ export function useSendState(
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null);
   const [selectedTokenId, setSelectedTokenId] = React.useState<string | null>(null);
   const [amount, setAmount] = React.useState(() => sanitizeAmountInput(initialAmount));
-  const [scanOpen, setScanOpen] = React.useState(false);
   const [step, setStep] = React.useState<"recipient" | "token" | "amount">("recipient");
   const [error, setError] = React.useState<string | null>(null);
-  const [recentRecipients, setRecentRecipients] = React.useState<Recipient[]>([]);
   const appliedInitialAsset = React.useRef<string | null>(null);
+  const queryClient = useQueryClient();
+  const recentRecipientsQuery = useQuery({
+    queryKey: ["recipients", "recent", accountInfo.ownerAddress || null],
+    queryFn: () => getRecentRecipients(accountInfo.ownerAddress as string),
+    enabled: Boolean(accountInfo.ownerAddress),
+    staleTime: 300_000,
+  });
+  const saveRecipientMutation = useMutation({
+    mutationKey: ["recipients", "save"],
+    mutationFn: ({ recipient, chainId }: { recipient: Recipient; chainId?: number }) => saveRecentRecipient(accountInfo.ownerAddress, recipient, chainId),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ["recipients", "recent", accountInfo.ownerAddress || null] }); },
+  });
+  const recentRecipients = recentRecipientsQuery.data || [];
 
   /* â”€â”€ Derived token rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -68,24 +80,6 @@ export function useSendState(
   const selectedTokenIsPrefilled = Boolean(
     selectedToken && initialAsset && matchesAsset(selectedToken, initialAsset, initialChain),
   );
-
-  React.useEffect(() => {
-    let cancelled = false;
-    if (!accountInfo.ownerAddress) {
-      setRecentRecipients([]);
-      return;
-    }
-    void getRecentRecipients(accountInfo.ownerAddress)
-      .then((items) => {
-        if (!cancelled) setRecentRecipients(items);
-      })
-      .catch(() => {
-        if (!cancelled) setRecentRecipients([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [accountInfo.ownerAddress]);
 
   /* â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -114,15 +108,6 @@ export function useSendState(
       }
     }
   }, [initialAmount, initialAsset, initialChain, selectedRecipient, selectedTokenId, tokenRows]);
-
-  React.useEffect(() => {
-    if (!scanOpen) return;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setScanOpen(false);
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [scanOpen]);
 
   /* â”€â”€ Filtered recipients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -177,11 +162,11 @@ export function useSendState(
     setError(null);
     setStep("token");
     setQuery(recipient.handle.startsWith("@") ? recipient.handle : recipient.address);
-    setRecentRecipients((current) => [
+    queryClient.setQueryData<Recipient[]>(["recipients", "recent", accountInfo.ownerAddress || null], (current = []) => [
       { ...recipient, status: "Recent" as const },
       ...current.filter((item) => item.address.toLowerCase() !== recipient.address.toLowerCase()),
     ].slice(0, 20));
-    void saveRecentRecipient(accountInfo.ownerAddress, recipient);
+    void saveRecipientMutation.mutateAsync({ recipient });
   };
 
   const selectToken = (token: TokenRow) => {
@@ -189,11 +174,6 @@ export function useSendState(
     setAmount("");
     setError(null);
     setStep("amount");
-  };
-
-  const handleScan = () => {
-    setScanOpen(false);
-    setError("QR scanner is not connected yet. Paste a wallet address instead.");
   };
 
   const handleSearchSubmit = async () => {
@@ -204,7 +184,13 @@ export function useSendState(
     }
     if (query.trim().startsWith("@")) {
       try {
-        const identity = await resolveUsername(query.trim(), Number(initialChain) || DEFAULT_CHAIN_ID);
+        const username = query.trim();
+        const chainId = Number(initialChain) || DEFAULT_CHAIN_ID;
+        const identity = await queryClient.fetchQuery({
+          queryKey: ["username", "resolve", username.toLowerCase(), chainId],
+          queryFn: () => resolveUsername(username, chainId),
+          staleTime: 60_000,
+        });
         if (identity.address) {
           selectRecipient({ id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address, network: initialChain || "Universal", status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]" });
           return;
@@ -251,8 +237,6 @@ export function useSendState(
     selectedToken,
     selectedTokenId,
     amount,
-    scanOpen,
-    setScanOpen,
     step,
     error,
     setError,
@@ -269,7 +253,6 @@ export function useSendState(
     goBack,
     selectRecipient,
     selectToken,
-    handleScan,
     handleSearchSubmit,
     handleAmountChange,
     handleMaxAmount,

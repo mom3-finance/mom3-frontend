@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { chainNameFromId } from "@/lib/chain";
@@ -128,53 +128,36 @@ function mapStoredActivity(raw: any): RealHistoryItem {
  */
 export function useTransactions(limit = 20) {
   const { universalAccount, accountInfo } = useUniversalAccount();
-  const [items, setItems] = React.useState<RealHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const load = React.useCallback(async (full = true) => {
-    if (!universalAccount) {
-      setIsLoading(false);
-      setError("Connect your wallet to load transaction history.");
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const pageSize = full ? Math.max(limit, 50) : Math.max(limit, 20);
+  const account = accountInfo.evmSmartAccount || accountInfo.solanaSmartAccount || accountInfo.ownerAddress;
+  const query = useQuery({
+    queryKey: ["history", "transactions", account || null, limit],
+    enabled: Boolean(universalAccount && account),
+    queryFn: async () => {
+      if (!universalAccount || !account) throw new Error("Connect your wallet to load transaction history.");
+      const pageSize = Math.max(limit, 50);
       const list: any[] = [];
-      const maxPages = full ? 20 : 1;
-      for (let page = 1; page <= maxPages; page += 1) {
+      for (let page = 1; page <= 20; page += 1) {
         const response = await universalAccount.getTransactions(page, pageSize);
         const pageItems = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
         list.push(...pageItems);
         if (pageItems.length < pageSize) break;
       }
-      const account = accountInfo.evmSmartAccount || accountInfo.solanaSmartAccount || accountInfo.ownerAddress;
-      if (account && list.length) {
-        const synced = await syncHistory(account, list);
-        if (synced) {
-          const storedResponse = await fetch(`/api/history?account=${encodeURIComponent(account)}&limit=${Math.max(limit, 50)}`, { cache: "no-store" });
-          const storedPayload = await storedResponse.json().catch(() => ({}));
-          if (storedResponse.ok && Array.isArray(storedPayload?.items)) {
-            setItems(storedPayload.items.map(mapStoredActivity));
-            return;
-          }
-        }
+      const synced = list.length ? await syncHistory(account, list) : false;
+      if (synced) {
+        const storedResponse = await fetch(`/api/history?account=${encodeURIComponent(account)}&limit=${pageSize}`, { cache: "no-store" });
+        const storedPayload = await storedResponse.json().catch(() => ({}));
+        if (storedResponse.ok && Array.isArray(storedPayload?.items)) return storedPayload.items.map(mapStoredActivity);
       }
-      setItems(list.map(summarizeTransaction));
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to load transactions.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accountInfo.evmSmartAccount, accountInfo.ownerAddress, accountInfo.solanaSmartAccount, universalAccount, limit]);
+      return list.map(summarizeTransaction);
+    },
+    staleTime: 5_000,
+    refetchInterval: 8_000,
+  });
 
-  React.useEffect(() => {
-    void load();
-    const timer = window.setInterval(() => void load(false), 8_000);
-    return () => window.clearInterval(timer);
-  }, [load]);
-
-  return { items, isLoading, error, reload: () => load(true) };
+  return {
+    items: query.data || [],
+    isLoading: query.isPending,
+    error: !account && !universalAccount ? "Connect your wallet to load transaction history." : query.error instanceof Error ? query.error.message : null,
+    reload: () => query.refetch(),
+  };
 }

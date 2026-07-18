@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { portfolioModes } from "../constants/dashboard";
 import type { CurrencyCode } from "../types/dashboard.types";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { usePortfolioPerformance } from "./usePortfolioPerformance";
-import { getMyUsername } from "@/modules/username/api/username.api";
+import { getMyUsername } from "@/modules/username/utils/username.api";
 
 export function useDashboardViewModel() {
   const {
@@ -20,18 +21,13 @@ export function useDashboardViewModel() {
   const [activeModeIndex, setActiveModeIndex] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>("USD");
   const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
-
-  useEffect(() => {
-    const ownerAddress = accountInfo.ownerAddress;
-    if (!ownerAddress) {
-      setUsername(null);
-      return;
-    }
-    void getMyUsername(ownerAddress)
-      .then((identity) => setUsername(identity?.username || null))
-      .catch(() => setUsername(null));
-  }, [accountInfo.ownerAddress]);
+  const usernameQuery = useQuery({
+    queryKey: ["username", "owner", accountInfo.ownerAddress || null],
+    queryFn: () => getMyUsername(accountInfo.ownerAddress as string),
+    enabled: Boolean(accountInfo.ownerAddress),
+    staleTime: 300_000,
+  });
+  const username = usernameQuery.data?.username || null;
 
   useEffect(() => {
     setMounted(true);
