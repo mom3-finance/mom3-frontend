@@ -38,7 +38,7 @@ async function isDelegatedOnChain(
 ) {
   const deployments = (await universalAccount.getEIP7702Deployments()) as Eip7702Deployment[];
   const deployment = deployments.find((item) => Number(item.chainId) === chainId);
-  if (!deployment) {
+  if (!deployment || !/^0x[0-9a-fA-F]{40}$/.test(String((deployment as Eip7702Deployment & { delegationAddress?: string }).delegationAddress || ""))) {
     throw new Error(`Particle does not provide an EIP-7702 deployment for chain ${chainId}.`);
   }
   return deployment.isDelegated === true;
@@ -190,6 +190,7 @@ export function useSignAndSend(
     }
 
     const authorizations: Array<{ userOpHash: string; signature: string }> = [];
+    const authorizationHashes = new Set<string>();
     // A nonce is scoped to an EOA on a chain. The same nonce on two chains
     // must not reuse the same EIP-7702 authorization signature.
     const nonceMap = new Map<string, string>();
@@ -239,10 +240,11 @@ export function useSignAndSend(
           nonceMap.set(authKey, serialized);
         }
 
-        authorizations.push({
-          userOpHash: String(userOp.userOpHash || ""),
-          signature: serialized,
-        });
+        const userOpHash = String(userOp.userOpHash || "");
+        if (!authorizationHashes.has(userOpHash)) {
+          authorizations.push({ userOpHash, signature: serialized });
+          authorizationHashes.add(userOpHash);
+        }
       }
     }
 

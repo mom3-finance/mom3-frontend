@@ -48,7 +48,7 @@ function delegationErrorMessage(error: unknown, chainId: number) {
 
 export function useProfileViewModel() {
   const router = useRouter();
-  const { isLoading: isMagicLoading, logout: magicLogout, session } = useMagic();
+  const { isLoading: isMagicLoading, session } = useMagic();
   const {
     accountInfo,
     eip7702Deployments,
@@ -179,8 +179,9 @@ export function useProfileViewModel() {
   ];
 
   const logout = async () => {
-    await magicLogout();
-    router.replace("/login");
+    // Let the sign-out guard own the async logout lifecycle so the user sees
+    // a stable transition before the login screen is shown.
+    router.replace("/signout");
   };
 
   const copyAddress = async (address: string, label: string) => {

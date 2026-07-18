@@ -102,33 +102,29 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
       const payload = await getMarketDetail(marketId);
       const live: CatalogMarket | null = payload.market && typeof payload.market === "object" ? payload.market as CatalogMarket : null;
       if (!live) throw new Error("This pool is no longer present in the live market catalog.");
-      const metricsPayload = await getMarketMetrics(marketId);
-      const metrics = metricsPayload.metrics || {};
-      let analysis: MarketDetailAnalysis | null = null;
-      try {
-        analysis = (await getMarketAnalysis(marketId)).analysis || null;
-      } catch {
-        // The detail remains useful when the separate analyst endpoint is temporarily unavailable.
-      }
-
+      const [metricsResult, analysisResult, allowlistResult, historyResult] = await Promise.allSettled([
+        getMarketMetrics(marketId),
+        getMarketAnalysis(marketId),
+        fetch(`/api/ai/execution-markets/${encodeURIComponent(marketId)}`, { cache: "no-store" }),
+        getMarketHistory(marketId, "30d"),
+      ]);
+      const metrics = metricsResult.status === "fulfilled" ? metricsResult.value.metrics || {} : {};
+      const analysis: MarketDetailAnalysis | null = analysisResult.status === "fulfilled"
+        ? analysisResult.value.analysis || null
+        : null;
       let executionEnabled = live.execution?.enabled === true;
-      try {
-        const allowlistResponse = await fetch(
-          `/api/ai/execution-markets/${encodeURIComponent(marketId)}`,
-          { cache: "no-store" },
-        );
-        const allowlistPayload = await allowlistResponse.json().catch(() => ({}));
-        executionEnabled = executionEnabled || (allowlistResponse.ok && allowlistPayload.allowlisted === true);
-      } catch {
-        // Execution stays disabled when the backend policy cannot be verified.
+      if (allowlistResult.status === "fulfilled" && allowlistResult.value.ok) {
+        const allowlistPayload = await allowlistResult.value.json().catch(() => ({}));
+        executionEnabled = executionEnabled || allowlistPayload.allowlisted === true;
       }
 
       const apy = Number(metrics.apy ?? live.apy ?? 0);
       const riskScore = Number(metrics.risk_score ?? live.risk_score ?? 5);
       let apyChart = emptyChart();
       let tvlChart = emptyChart();
-      try {
-        const historyPayload = await getMarketHistory(marketId, "30d");
+      if (historyResult.status === "fulfilled") {
+        try {
+          const historyPayload = historyResult.value;
         const points = Array.isArray(historyPayload.points) ? historyPayload.points : [];
         const ordered = points
           .map((point: { capturedAt?: string; timestamp?: string; apy?: number; tvlUsd?: number }) => ({
@@ -140,8 +136,9 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
           .sort((left: { timestamp: number }, right: { timestamp: number }) => left.timestamp - right.timestamp);
         apyChart = chartRanges(ordered.map((point: { apy: number }) => point.apy));
         tvlChart = chartRanges(ordered.map((point: { tvl: number }) => point.tvl));
-      } catch {
-        // Historical chart is optional; current live metrics still render.
+        } catch {
+          // Historical chart is optional; current live metrics still render.
+        }
       }
       setMarket((current) => ({
         ...current,

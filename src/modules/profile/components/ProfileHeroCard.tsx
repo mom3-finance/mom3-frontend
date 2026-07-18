@@ -14,9 +14,6 @@ type ProfileHeroCardProps = {
   stats: ProfileStat[];
   username?: string | null;
   isUsernameLoading?: boolean;
-  avatarUrl?: string | null;
-  isAvatarUploading?: boolean;
-  onAvatarChange?: (file: File) => void;
 };
 
 export function ProfileHeroCard({
@@ -25,9 +22,6 @@ export function ProfileHeroCard({
   stats,
   username,
   isUsernameLoading = false,
-  avatarUrl,
-  isAvatarUploading,
-  onAvatarChange,
 }: ProfileHeroCardProps) {
   return (
     <motion.section
@@ -41,17 +35,15 @@ export function ProfileHeroCard({
       <div className="pointer-events-none absolute -left-12 bottom-4 h-40 w-40 rounded-full bg-[#3B33BD]/35 blur-[54px]" />
 
       <div className="relative z-10">
-        <label className="relative mx-auto block w-fit cursor-pointer">
+        <div className="relative mx-auto block w-fit">
         <WalletAvatar
           address={ownerAddress}
-          imageUrl={avatarUrl}
           label="Profile"
           fallback={email || "Wallet"}
           size="lg"
           className="mx-auto shadow-[0_14px_34px_-14px_rgba(59,51,189,0.9)] ring-4 ring-black/25"
         />
-        {onAvatarChange ? <><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={isAvatarUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) onAvatarChange(file); event.currentTarget.value = ""; }} /><span className="absolute bottom-0 right-0 rounded-full bg-[#ccff00] px-2 py-1 text-[10px] font-black text-black">{isAvatarUploading ? "…" : "Edit"}</span></> : null}
-        </label>
+        </div>
         <div className="mt-3 flex min-h-7 items-center justify-center gap-1.5">
           {isUsernameLoading ? <span className="h-5 w-24 animate-pulse rounded bg-white/10" aria-label="Loading username" /> : null}
           {username ? <>

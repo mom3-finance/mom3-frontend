@@ -40,7 +40,7 @@ export function DashboardHeader({
         />
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-base font-black">{username || "Username not claimed"}</span>
+            <span className="text-base font-black">{username || "-"}</span>
             {username ? <AppIcon
               icon="material-symbols:verified-rounded"
               aria-hidden="true"

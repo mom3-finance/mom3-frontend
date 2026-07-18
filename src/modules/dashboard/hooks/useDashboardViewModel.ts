@@ -9,7 +9,6 @@ import { formatCurrency } from "../utils/formatCurrency";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { usePortfolioPerformance } from "./usePortfolioPerformance";
 import { getMyUsername } from "@/modules/username/utils/username.api";
-import { getUserProfile } from "@/modules/profile/utils/profile.api";
 
 export function useDashboardViewModel() {
   const {
@@ -29,12 +28,6 @@ export function useDashboardViewModel() {
     staleTime: 300_000,
   });
   const username = usernameQuery.data?.username || null;
-  const profileQuery = useQuery({
-    queryKey: ["profile", accountInfo.ownerAddress || null],
-    queryFn: () => getUserProfile(accountInfo.ownerAddress as string),
-    enabled: Boolean(accountInfo.ownerAddress),
-    staleTime: 300_000,
-  });
 
   useEffect(() => {
     setMounted(true);
@@ -91,7 +84,6 @@ export function useDashboardViewModel() {
     pnlValue,
     pnlPercent: performance.data?.change_percent ?? 0,
     username,
-    avatarUrl: profileQuery.data?.avatar_url || null,
     performanceHasRealData: Boolean(performance.data?.has_real_data),
     isPerformanceLoading: performance.isLoading,
     handleSelectCurrency,

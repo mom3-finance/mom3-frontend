@@ -77,7 +77,7 @@ export default function MarketDetailView({
   // Keep the action panel visible for every canonical market detail. The
   // Backend remains the execution adapter gate; a delayed adapter response
   // must not make the Supply/Withdraw controls disappear from the UI.
-  const canExecuteYield = Boolean(executionMarketId);
+  const canExecuteYield = Boolean(executionMarketId && catalogDetail.metadata.executionEnabled);
   const tone = liveMarket.risk === "High" ? "red" : liveMarket.risk === "Medium" ? "yellow" : "green";
 
   async function refreshAll() {

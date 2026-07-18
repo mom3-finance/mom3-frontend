@@ -1,11 +1,9 @@
 "use client";
 
 import { generateAvatarURL } from "@cfx-kit/wallet-avatar";
-import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import type { UserProfile } from "@/modules/profile/types/profile.types";
 
 type WalletAvatarSize = "sm" | "md" | "lg" | "xl";
 
@@ -44,24 +42,11 @@ export function WalletAvatar({
   fallbackClassName,
   imageClassName,
 }: WalletAvatarProps) {
-  const profileQuery = useQuery<UserProfile | null>({
-    queryKey: ["profile", address || null],
-    queryFn: async () => {
-      const response = await fetch(`/api/profile/${encodeURIComponent(address as string)}`, { cache: "no-store" });
-      if (!response.ok) return null;
-      const payload = await response.json() as { profile?: UserProfile | null };
-      return payload.profile || null;
-    },
-    enabled: Boolean(address && !imageUrl),
-    staleTime: Infinity,
-    gcTime: 86_400_000,
-    retry: false,
-  });
   const avatarUrl = React.useMemo(
     () => (address ? generateAvatarURL(address) : null),
     [address],
   );
-  const resolvedImageUrl = imageUrl || profileQuery.data?.avatar_url || avatarUrl;
+  const resolvedImageUrl = imageUrl || avatarUrl;
   const fallbackLabel = fallback?.trim().slice(0, 1).toUpperCase() || "W";
 
   return (
