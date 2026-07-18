@@ -38,7 +38,7 @@ async function isDelegatedOnChain(
 ) {
   const deployments = (await universalAccount.getEIP7702Deployments()) as Eip7702Deployment[];
   const deployment = deployments.find((item) => Number(item.chainId) === chainId);
-  if (!deployment || !/^0x[0-9a-fA-F]{40}$/.test(String((deployment as Eip7702Deployment & { delegationAddress?: string }).delegationAddress || ""))) {
+  if (!deployment) {
     throw new Error(`Particle does not provide an EIP-7702 deployment for chain ${chainId}.`);
   }
   return deployment.isDelegated === true;

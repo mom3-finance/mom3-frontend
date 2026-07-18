@@ -95,7 +95,7 @@ export function ProfileEip7702Sheet({
         <div className="space-y-2" aria-label="EIP-7702 compatible chains">
           {deployments.map((deployment) => {
             const isPending = activeChainId === deployment.chainId;
-            const canDelegate = /^0x[0-9a-fA-F]{40}$/.test(deployment.delegationAddress);
+            const canDelegate = deployment.chainId !== 101;
             const chainName = chainNameFromId(deployment.chainId);
             return (
               <div key={deployment.chainId} className="flex min-h-[72px] items-center gap-3 rounded-2xl bg-black/25 px-3 py-2.5">
@@ -105,7 +105,7 @@ export function ProfileEip7702Sheet({
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-black text-white">{chainName}</span>
                   <span className={`mt-0.5 block text-xs font-semibold ${deployment.isDelegated ? "text-[#ccff00]" : "text-[#9A9AA2]"}`}>
-                    {isPending ? "Waiting for approval…" : deployment.isDelegated ? "Delegated" : canDelegate ? "Not delegated" : "Not available for this wallet"}
+                    {isPending ? "Waiting for approval…" : deployment.isDelegated ? "Delegated" : canDelegate ? "Not delegated" : "Not available for EIP-7702"}
                   </span>
                 </span>
                 <DelegationSwitch

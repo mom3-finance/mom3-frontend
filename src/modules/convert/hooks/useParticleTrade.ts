@@ -21,7 +21,7 @@ export type ConvertRequest = {
 };
 
 export function useParticleTrade() {
-  const { universalAccount, ensureDelegated, signAndSend, refreshAccount } = useUniversalAccount();
+  const { universalAccount, signAndSend, refreshAccount } = useUniversalAccount();
   const [status, setStatus] = React.useState<TradeStatus>("idle");
   const [error, setError] = React.useState<string | null>(null);
   const [transactionId, setTransactionId] = React.useState<string | null>(null);
@@ -48,9 +48,6 @@ export function useParticleTrade() {
           throw new Error(`Particle Universal Account does not support chain ${request.chainId}.`);
         }
 
-        if (request.chainId !== CHAIN_ID.SOLANA_MAINNET) {
-          await ensureDelegated(request.chainId);
-        }
         const particleTransaction = await universalAccount.createConvertTransaction({
           expectToken: {
             type: request.tokenType,
@@ -78,7 +75,7 @@ export function useParticleTrade() {
         return null;
       }
     },
-    [ensureDelegated, universalAccount],
+    [universalAccount],
   );
 
   const execute = React.useCallback(

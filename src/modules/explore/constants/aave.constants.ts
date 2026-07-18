@@ -15,7 +15,7 @@ export const AAVE_MARKETS: Record<number, AaveMarketConfig> = {
     pool: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     usdc: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
     usdcDecimals: 6,
-    rpcUrl: "https://arb1.arbitrum.io/rpc",
+    rpcUrl: process.env.NEXT_PUBLIC_ARB_RPC_URL || "https://arb1.arbitrum.io/rpc",
     historySlug: "aave-v3-arbitrum",
   },
   8453: {
@@ -24,7 +24,7 @@ export const AAVE_MARKETS: Record<number, AaveMarketConfig> = {
     pool: "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
     usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     usdcDecimals: 6,
-    rpcUrl: "https://mainnet.base.org",
+    rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://mainnet.base.org",
     historySlug: "aave-v3-base",
   },
 };
