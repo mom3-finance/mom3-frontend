@@ -186,16 +186,6 @@ export default function MarketDetailView({
               </div>
               {catalogDetail.metadata.analysis ? <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs"><div className="flex justify-between gap-2"><span className="text-[#8E8E93]">Base APY</span><strong className="text-white">{catalogDetail.metadata.apyBase?.toFixed(2) ?? "—"}%</strong></div><div className="flex justify-between gap-2"><span className="text-[#8E8E93]">Reward APY</span><strong className="text-white">{catalogDetail.metadata.apyReward?.toFixed(2) ?? "—"}%</strong></div><div className="flex justify-between gap-2"><span className="text-[#8E8E93]">Outlook</span><strong className="text-white">{catalogDetail.metadata.analysis.market_outlook.label}</strong></div><div className="flex justify-between gap-2"><span className="text-[#8E8E93]">Confidence</span><strong className="text-white">{catalogDetail.metadata.analysis.confidence.percent}%</strong></div></div> : <p className="mt-3 text-xs text-[#A7A7B7]">Analysis is temporarily unavailable.</p>}
             </div>
-            {hasCatalogData ? (
-              <details className="group mt-3 border-t border-white/10 pt-2">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl px-1 text-sm font-bold text-[#C8C8CE] focus-visible:ring-2 focus-visible:ring-[#ccff00]">View full analysis<AppIcon icon="lucide:chevron-down" aria-hidden="true" width={18} height={18} className="transition-transform group-open:rotate-180" /></summary>
-                <dl className="space-y-3 px-1 pb-1 pt-2 text-sm">
-                  <div className="flex justify-between gap-4"><dt className="text-[#A7A7B7]">Risk score</dt><dd className="font-mono font-bold text-white">{catalogDetail.metadata.riskScore === null ? "Unavailable" : `${catalogDetail.metadata.riskScore.toFixed(1)}/10`}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-[#A7A7B7]">Market outlook</dt><dd className="text-right font-bold text-white">{catalogDetail.metadata.analysis?.market_outlook.label || catalogDetail.metadata.predictionClass || "Unavailable"}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-[#A7A7B7]">Confidence</dt><dd className="font-mono font-bold text-white">{catalogDetail.metadata.analysis ? `${catalogDetail.metadata.analysis.confidence.percent}%` : catalogDetail.metadata.predictionProbability === null ? "Unavailable" : `${catalogDetail.metadata.predictionProbability.toFixed(0)}%`}</dd></div>
-                </dl>
-              </details>
-            ) : null}
           </section>
 
           <section className="mt-3 rounded-[22px] border border-white/10 bg-[#111217] p-3.5" aria-labelledby="detail-analysis-title">
