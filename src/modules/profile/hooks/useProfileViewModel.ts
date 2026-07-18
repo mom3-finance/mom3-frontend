@@ -71,6 +71,8 @@ export function useProfileViewModel() {
     queryFn: () => getUserProfile(session?.ownerAddress as string),
     enabled: Boolean(session?.ownerAddress),
     staleTime: 300_000,
+    gcTime: 900_000,
+    retry: false,
   });
   const usernameQuery = useQuery({
     queryKey: ["username", "owner", session?.ownerAddress || null],
