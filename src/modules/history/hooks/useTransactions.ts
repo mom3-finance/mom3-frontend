@@ -70,7 +70,7 @@ function deduplicateTransactions<T extends Record<string, unknown>>(transactions
   });
 }
 
-function summarizeTransaction(raw: any): RealHistoryItem {
+function summarizeTransaction(raw: any, account = ""): RealHistoryItem {
   const id = String(raw?.transactionId || raw?.id || raw?.hash || Math.random());
   const status = normalizeStatus(raw?.status ?? raw?.transactionStatus);
   const chainId = Number(raw?.chainId || raw?.originChainId || 0);
@@ -78,16 +78,24 @@ function summarizeTransaction(raw: any): RealHistoryItem {
 
   // Token changes describe what moved in/out.
   const changes = raw?.tokenChanges?.decr ?? raw?.tokenChanges ?? [];
-  const firstChange = Array.isArray(changes) ? changes[0] : undefined;
-  const amountIn = Number(firstChange?.amountInUSD ?? raw?.amountInUSD ?? 0) || 0;
+  const firstChange = raw?.change && raw?.targetToken
+    ? { ...raw.change, token: raw.targetToken }
+    : Array.isArray(changes) ? changes[0] : undefined;
+  const amountIn = Math.abs(Number(firstChange?.amountInUSD ?? raw?.amountInUSD ?? 0) || 0);
   const symbol = String(firstChange?.token?.symbol || firstChange?.token?.type || "");
   const decimals = Number(firstChange?.token?.realDecimals ?? firstChange?.token?.decimals ?? 18);
-  const rawAmount = firstChange?.amount ?? 0;
+  const rawAmount = Math.abs(Number(firstChange?.amount ?? 0) || 0);
   const amountNum = typeof rawAmount === "number" && Number.isInteger(rawAmount) && Math.abs(rawAmount) >= 10 ** decimals
     ? rawAmount / 10 ** decimals
     : parseDecimalish(rawAmount, decimals);
 
-  const isReceive = amountIn > 0 && (raw?.receiveTokens?.length || firstChange?.amount > 0);
+  const isReceive = String(firstChange?.to || "").toLowerCase() === account.toLowerCase()
+    || Boolean(raw?.receiveTokens?.length)
+    || (amountIn > 0 && Number(firstChange?.amount ?? 0) > 0);
+  const isSend = String(firstChange?.from || "").toLowerCase() === account.toLowerCase();
+  const isConvert = String(raw?.tag || raw?.type || raw?.action || "").toLowerCase().includes("convert");
+  const action: HistoryTransactionType = isReceive ? "receive" : isSend ? "send" : isConvert ? "convert" : "transaction";
+  const presentation = presentationFor(action);
   const amount = amountNum
     ? `${isReceive ? "+" : ""}${amountNum.toFixed(4)} ${symbol}`
     : amountIn
@@ -99,8 +107,8 @@ function summarizeTransaction(raw: any): RealHistoryItem {
 
   return {
     id,
-    title: isReceive ? "Received" : "Transaction",
-    description: network,
+    title: isReceive ? "Deposit received" : isSend ? "Sent asset" : isConvert ? "Asset converted" : "Transaction",
+    description: raw?.targetToken?.symbol ? `${raw.targetToken.symbol} · ${network}` : network,
     amount,
     time: relativeTime(raw?.createdAt || raw?.timestamp || raw?.time),
     status,
@@ -109,14 +117,17 @@ function summarizeTransaction(raw: any): RealHistoryItem {
     note: isReceive
       ? "Funds are available in your universal balance."
       : "Your transfer was processed successfully.",
-    icon: isReceive ? "solar:wallet-money-bold" : "solar:transfer-horizontal-bold",
-    tone: isReceive ? "green" : "blue",
-    action: isReceive ? "receive" : "transaction",
+    icon: presentation.icon,
+    tone: presentation.tone,
+    action,
     explorerUrl: `https://universalx.app/activity/details?id=${encodeURIComponent(id)}`,
   };
 }
 
 function mapStoredActivity(raw: any): RealHistoryItem {
+  if (raw?.title === "Transaction" && raw?.rawTransaction) {
+    return summarizeTransaction(raw.rawTransaction, String(raw.account || ""));
+  }
   const amount = raw?.amount || {};
   const value = Number(amount.value || 0);
   const usd = Number(amount.usd || 0);
@@ -175,7 +186,7 @@ export function useTransactions(limit = 20) {
           return storedItems.map(mapStoredActivity);
         }
       }
-      return uniqueList.map(summarizeTransaction);
+      return uniqueList.map((item) => summarizeTransaction(item, account));
     },
     staleTime: 5_000,
     refetchInterval: 8_000,
