@@ -53,8 +53,8 @@ export function WalletAvatar({
       return payload.profile || null;
     },
     enabled: Boolean(address && !imageUrl),
-    staleTime: 300_000,
-    gcTime: 900_000,
+    staleTime: Infinity,
+    gcTime: 86_400_000,
     retry: false,
   });
   const avatarUrl = React.useMemo(

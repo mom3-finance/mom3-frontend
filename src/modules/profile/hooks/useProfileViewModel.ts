@@ -70,8 +70,8 @@ export function useProfileViewModel() {
     queryKey: ["profile", session?.ownerAddress || null],
     queryFn: () => getUserProfile(session?.ownerAddress as string),
     enabled: Boolean(session?.ownerAddress),
-    staleTime: 300_000,
-    gcTime: 900_000,
+    staleTime: Infinity,
+    gcTime: 86_400_000,
     retry: false,
   });
   const usernameQuery = useQuery({
