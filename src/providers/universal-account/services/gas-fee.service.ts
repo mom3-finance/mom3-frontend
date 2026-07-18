@@ -7,12 +7,16 @@ import { getActiveFeeQuote } from "@/providers/universal-account/utils/gas-spons
 export type FeeBreakdownRow = { label: string; value: string; originalValue?: string };
 
 function formatFeeToken(item: ITokenWithUSD) {
-  const decimals = item.token.realDecimals ?? item.token.decimals ?? 18;
+  const symbol = String(item.token.symbol || item.token.type || "Token").toUpperCase();
+  const decimals = ["USDC", "USDT"].includes(symbol)
+    ? 6
+    : symbol === "SOL"
+      ? 9
+      : item.token.realDecimals ?? item.token.decimals ?? 18;
   const numericAmount = typeof item.amount === "number" ? item.amount : null;
   const amount = numericAmount !== null && Number.isInteger(numericAmount) && Math.abs(numericAmount) >= 10 ** decimals
     ? numericAmount / 10 ** decimals
     : parseDecimalish(item.amount, decimals);
-  const symbol = item.token.symbol || item.token.type || "Token";
   return `${formatTokenBalance(amount)} ${symbol.toUpperCase()} on ${chainNameFromId(Number(item.token.chainId))}`;
 }
 
