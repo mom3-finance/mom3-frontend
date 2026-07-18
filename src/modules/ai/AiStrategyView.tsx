@@ -54,10 +54,15 @@ function MarketAnalysisResults({ riskTolerance }: { riskTolerance: "conservative
 }
 
 function AnalysisResultCard({ item }: { item: MarketAnalysisItem }) {
+  const recommendationTone = item.analysis.recommendation === "consider"
+    ? "bg-[#5EE6B0]/10 text-[#5EE6B0]"
+    : item.analysis.recommendation === "avoid"
+      ? "bg-red-400/10 text-red-200"
+      : "bg-[#FFD166]/10 text-[#FFD166]";
   return <article className="rounded-[22px] border border-white/10 bg-[#111217] p-4">
     <div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ccff00] text-sm font-black text-black">#{item.rank}</span><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-black text-white">{item.protocol} · {item.symbol || item.asset}</h3><p className="mt-1 text-xs text-[#A7A7B7]">{item.chain} · {item.analysis.market_outlook.label} outlook · {item.analysis.confidence.percent}% confidence</p></div><span className="text-right text-lg font-black text-[#5EE6B0]">{item.apy.toFixed(2)}%</span></div>
     <p className="mt-3 text-xs leading-relaxed text-[#C8C8CE]">{item.analysis.summary}</p>
-    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-[#A7A7B7]"><span className="rounded-full bg-white/[0.06] px-2.5 py-1">TVL ${item.tvl >= 1_000_000 ? `${(item.tvl / 1_000_000).toFixed(1)}M` : item.tvl.toLocaleString()}</span><span className="rounded-full bg-white/[0.06] px-2.5 py-1">Risk {item.risk_score.toFixed(1)}/10</span><span className="rounded-full bg-white/[0.06] px-2.5 py-1">{item.analysis.recommendation}</span></div>
+    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-[#A7A7B7]"><span className="rounded-full bg-white/[0.06] px-2.5 py-1">TVL ${item.tvl >= 1_000_000 ? `${(item.tvl / 1_000_000).toFixed(1)}M` : item.tvl.toLocaleString()}</span><span className="rounded-full bg-white/[0.06] px-2.5 py-1">Risk {item.risk_score.toFixed(1)}/10</span><span className={`rounded-full px-2.5 py-1 uppercase ${recommendationTone}`}>{item.analysis.recommendation}</span></div>
     <Link href={`/explore/${encodeURIComponent(`${item.protocol}-${item.asset}`)}?chainId=${item.chain_id}&marketId=${encodeURIComponent(item.market_id)}`} className="mt-3 inline-flex min-h-10 items-center text-xs font-black text-[#ccff00] focus-visible:ring-2 focus-visible:ring-[#ccff00]">View market <AppIcon icon="lucide:arrow-right" aria-hidden="true" width={15} height={15} className="ml-1" /></Link>
   </article>;
 }
