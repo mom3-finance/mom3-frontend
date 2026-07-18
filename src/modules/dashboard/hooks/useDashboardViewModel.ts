@@ -84,6 +84,7 @@ export function useDashboardViewModel() {
     pnlValue,
     pnlPercent: performance.data?.change_percent ?? 0,
     username,
+    isUsernameLoading: usernameQuery.isPending,
     performanceHasRealData: Boolean(performance.data?.has_real_data),
     isPerformanceLoading: performance.isLoading,
     handleSelectCurrency,

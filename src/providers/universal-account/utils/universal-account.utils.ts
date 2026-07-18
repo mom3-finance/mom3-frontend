@@ -61,10 +61,7 @@ export async function loadUniversalAccountSnapshot(
     chainId: Number(deployment.chainId || 0),
     delegationAddress: String(deployment.delegationAddress || "0x"),
     isDelegated: deployment.isDelegated === true,
-  })).filter((deployment) =>
-    deployment.chainId > 0 &&
-    /^0x[0-9a-fA-F]{40}$/.test(deployment.delegationAddress),
-  );
+  })).filter((deployment) => deployment.chainId > 0);
 
   const targetChain = deployments.find(
     (deployment: { chainId?: number | string }) => Number(deployment.chainId) === DEFAULT_CHAIN_ID,

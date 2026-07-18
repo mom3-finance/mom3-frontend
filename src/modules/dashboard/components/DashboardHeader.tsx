@@ -14,6 +14,7 @@ type DashboardHeaderProps = {
   profileFallback?: string;
   profileImageUrl?: string | null;
   username?: string | null;
+  isUsernameLoading?: boolean;
   onSelectCurrency: (code: CurrencyCode) => void;
   onToggleCurrencyMenu: () => void;
 };
@@ -25,6 +26,7 @@ export function DashboardHeader({
   profileFallback,
   profileImageUrl,
   username,
+  isUsernameLoading = false,
   onSelectCurrency,
   onToggleCurrencyMenu,
 }: DashboardHeaderProps) {
@@ -40,7 +42,11 @@ export function DashboardHeader({
         />
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-base font-black">{username || "-"}</span>
+            {isUsernameLoading && !username ? (
+              <span className="h-5 w-24 animate-pulse rounded-md bg-white/10" aria-label="Loading username" />
+            ) : (
+              <span className="text-base font-black">{username || "-"}</span>
+            )}
             {username ? <AppIcon
               icon="material-symbols:verified-rounded"
               aria-hidden="true"

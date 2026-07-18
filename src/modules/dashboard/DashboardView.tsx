@@ -30,6 +30,7 @@ export default function DashboardView() {
     pnlValue,
     pnlPercent,
     username,
+    isUsernameLoading,
     performanceHasRealData,
     isPerformanceLoading,
     handleSelectCurrency,
@@ -58,6 +59,7 @@ export default function DashboardView() {
             profileAddress={session?.ownerAddress}
             profileFallback={session?.email}
             username={username}
+            isUsernameLoading={isUsernameLoading}
             onSelectCurrency={handleSelectCurrency}
             onToggleCurrencyMenu={handleToggleCurrencyMenu}
           />
