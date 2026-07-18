@@ -6,7 +6,8 @@ import { formatUsdValue } from "@/lib/format";
 import type { MarketDetail, Risk } from "@/lib/portfolio-data";
 import type { TimeRange } from "@/components/ui/mini-chart";
 import { useRealtime } from "@/providers/realtime/components/RealtimeProvider";
-import { getMarketDetail, getMarketHistory, getMarketMetrics } from "@/modules/markets/api/markets.api";
+import { getMarketAnalysis, getMarketDetail, getMarketHistory, getMarketMetrics } from "@/modules/markets/api/markets.api";
+import type { MarketDetailAnalysis } from "../types/market-detail.types";
 
 type CatalogMarket = {
   market_id?: string;
@@ -89,6 +90,7 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
     sourceUrl: null as string | null,
     currentTvl: null as number | null,
     tvlChart: emptyChart(),
+    analysis: null as MarketDetailAnalysis | null,
   });
   const [isLoading, setIsLoading] = React.useState(Boolean(marketId));
   const [error, setError] = React.useState<string | null>(null);
@@ -98,10 +100,16 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
     setIsLoading(true);
     try {
       const payload = await getMarketDetail(marketId);
-      const live: CatalogMarket | null = payload.market && typeof payload.market === "object" ? payload.market : null;
+      const live: CatalogMarket | null = payload.market && typeof payload.market === "object" ? payload.market as CatalogMarket : null;
       if (!live) throw new Error("This pool is no longer present in the live market catalog.");
       const metricsPayload = await getMarketMetrics(marketId);
       const metrics = metricsPayload.metrics || {};
+      let analysis: MarketDetailAnalysis | null = null;
+      try {
+        analysis = (await getMarketAnalysis(marketId)).analysis || null;
+      } catch {
+        // The detail remains useful when the separate analyst endpoint is temporarily unavailable.
+      }
 
       let executionEnabled = live.execution?.enabled === true;
       try {
@@ -177,6 +185,7 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         sourceUrl: live.source_url || null,
         currentTvl: Number(metrics.tvl ?? live.tvl ?? 0),
         tvlChart,
+        analysis,
       });
       setError(null);
     } catch (cause) {
