@@ -156,7 +156,13 @@ export function getTotalFeeLabel(transaction: ITransaction | null) {
 
 export function formatTokenChange(item: ITokenWithUSD) {
   const decimals = item.token.realDecimals ?? item.token.decimals ?? 18;
-  const amount = parseDecimalish(item.amount, decimals);
+  // Particle may return numeric token amounts in base units. Numeric values
+  // are otherwise treated as already-normalized by parseDecimalish, which
+  // makes values such as 117491000000 leak into the payment preview.
+  const numericAmount = typeof item.amount === "number" ? item.amount : null;
+  const amount = numericAmount !== null && Number.isInteger(numericAmount) && Math.abs(numericAmount) >= 10 ** decimals
+    ? numericAmount / 10 ** decimals
+    : parseDecimalish(item.amount, decimals);
   const symbol = item.token.symbol || item.token.type || "Token";
   const chain = chainNameFromId(Number(item.token.chainId));
   return `${formatTokenBalance(amount)} ${symbol.toUpperCase()} on ${chain}`;
