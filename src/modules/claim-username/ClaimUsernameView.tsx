@@ -5,15 +5,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, CircleHelp } from 'lucide-react';
 import { MobileShell } from '@/components/ui/mobile-shell';
 import { useMagic } from '@/providers/magic/components/MagicProvider';
+import { useUniversalAccount } from '@/providers/universal-account/components/UniversalAccountProvider';
 import StepIndicator from "./components/step-indicator";
 import ChooseHandle from "./components/choose-handle";
 import ConfirmHandle from "./components/confirm-handle";
 import CompleteView from "./components/complete-view";
+import { claimUsername } from "@/modules/username/api/username.api";
+import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 
 export default function ClaimUsernameView() {
   const { session } = useMagic();
+  const { accountInfo } = useUniversalAccount();
   const [step, setStep] = useState(1);
   const [handle, setHandle] = useState('ubayy');
+  const [error, setError] = useState<string | null>(null);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const handleBack = useCallback(() => {
     if (step > 1) setStep(step - 1);
@@ -23,9 +29,18 @@ export default function ClaimUsernameView() {
     setStep(2);
   }, []);
 
-  const handleConfirm = useCallback(() => {
-    setStep(3);
-  }, []);
+  const handleConfirm = useCallback(async () => {
+    if (!session?.ownerAddress) return;
+    setIsClaiming(true);
+    setError(null);
+    try {
+      const address = accountInfo.evmSmartAccount || session.ownerAddress;
+      await claimUsername(handle, session.ownerAddress, DEFAULT_CHAIN_ID, address);
+      setStep(3);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to claim username.');
+    } finally { setIsClaiming(false); }
+  }, [accountInfo.evmSmartAccount, handle, session?.ownerAddress]);
 
   const handleViewProfile = useCallback(() => {
     window.location.href = '/dashboard';
@@ -89,7 +104,9 @@ export default function ClaimUsernameView() {
                 key="confirm"
                 handleValue={handle}
                 onBack={handleBack}
-                onConfirm={handleConfirm}
+                onConfirm={() => void handleConfirm()}
+                isClaiming={isClaiming}
+                error={error}
               />
             )}
             {step === 3 && (

@@ -24,6 +24,7 @@ import {
 } from "@/modules/send/utils/send.utils";
 import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 import { syncHistory } from "@/modules/history/api/history.api";
+import { resolveUsername } from "@/modules/username/api/username.api";
 
 export function useConfirmPaymentState() {
   const searchParams = useSearchParams();
@@ -77,6 +78,11 @@ export function useConfirmPaymentState() {
 
   React.useEffect(() => {
     let cancelled = false;
+    if (to.trim().startsWith("@") && selectedToken) {
+      void resolveUsername(to.trim(), selectedToken.chainId).then((identity) => {
+        if (!cancelled && identity.address) setRecipient({ id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address, network: selectedToken.chainName, status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]" });
+      }).catch(() => { if (!cancelled) setError("Username was not found on the selected chain."); });
+    }
     void getRecentRecipients(accountInfo.ownerAddress)
       .catch(() => [])
       .then((recentRecipients) => {
@@ -87,7 +93,7 @@ export function useConfirmPaymentState() {
     return () => {
       cancelled = true;
     };
-  }, [accountInfo.ownerAddress, to]);
+  }, [accountInfo.ownerAddress, selectedToken, to]);
 
   const prepareTransaction = React.useCallback(async () => {
     if (!universalAccount || !recipient || !selectedToken) return;
