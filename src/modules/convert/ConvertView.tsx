@@ -13,7 +13,7 @@ import {
   getFundingRows,
   sanitizeAmountInput,
 } from "@/modules/send/utils/send.utils";
-import { getFeeBreakdownRows, getTotalFeeLabel } from "@/providers/universal-account/services/gas-fee.service";
+import { getFeeBreakdownRows, getFeeTokenRows, getTotalFeeLabel } from "@/providers/universal-account/services/gas-fee.service";
 import { formatUsd } from "@/lib/format";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { useUniversalTransactionStatus } from "@/providers/universal-account/hooks/useUniversalTransactionStatus";
@@ -38,6 +38,7 @@ export default function ConvertView() {
   const selectedAsset = targetAssets.find((asset) => asset.type === targetTokenType) ?? targetAssets[0];
   const fundingRows = getFundingRows(trade.transaction);
   const feeRows = getFeeBreakdownRows(trade.transaction);
+  const feeTokenRows = getFeeTokenRows(trade.transaction);
 
   const handlePrepare = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -254,6 +255,12 @@ export default function ConvertView() {
                       {row.value}
                     </span>
                   </span>
+                </div>
+              ))}
+              {feeTokenRows.map((row) => (
+                <div key={`fee-token-${row.label}`} className="flex items-start justify-between gap-4 border-t border-white/[0.06] pt-2 text-sm">
+                  <span className="text-[#A7A7B7]">Fee token</span>
+                  <span className="text-right font-mono text-xs font-bold tabular-nums text-white">{row.label}</span>
                 </div>
               ))}
             </div>
