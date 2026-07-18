@@ -60,7 +60,7 @@ export function ProfileHeroCard({
               height={20}
               className="text-[#ccff00]"
             />
-          </> : <h2 className="text-xl font-black tracking-tight text-white">Username not claimed</h2>}
+          </> : null}
         </div>
         {!username ? (
           <Link
