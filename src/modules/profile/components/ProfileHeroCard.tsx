@@ -13,6 +13,7 @@ type ProfileHeroCardProps = {
   ownerAddress: string;
   stats: ProfileStat[];
   username?: string | null;
+  isUsernameLoading?: boolean;
   avatarUrl?: string | null;
   isAvatarUploading?: boolean;
   onAvatarChange?: (file: File) => void;
@@ -23,6 +24,7 @@ export function ProfileHeroCard({
   ownerAddress,
   stats,
   username,
+  isUsernameLoading = false,
   avatarUrl,
   isAvatarUploading,
   onAvatarChange,
@@ -62,7 +64,7 @@ export function ProfileHeroCard({
             />
           </> : null}
         </div>
-        {!username ? (
+        {!username && !isUsernameLoading ? (
           <Link
             href="/claim-username"
             className="mt-3 inline-flex min-h-10 items-center justify-center rounded-full bg-[#ccff00] px-4 text-xs font-black text-black transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-[#ccff00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#171819]"

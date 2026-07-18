@@ -65,13 +65,20 @@ export function useProfileViewModel() {
   const [eip7702Open, setEip7702Open] = React.useState(false);
   const [delegatingChainId, setDelegatingChainId] = React.useState<number | null>(null);
   const [delegationError, setDelegationError] = React.useState<string | null>(null);
-  const [username, setUsername] = React.useState<string | null>(null);
   const queryClient = useQueryClient();
   const profileQuery = useQuery({
     queryKey: ["profile", session?.ownerAddress || null],
     queryFn: () => getUserProfile(session?.ownerAddress as string),
     enabled: Boolean(session?.ownerAddress),
     staleTime: 300_000,
+  });
+  const usernameQuery = useQuery({
+    queryKey: ["username", "owner", session?.ownerAddress || null],
+    queryFn: () => getMyUsername(session?.ownerAddress as string),
+    enabled: Boolean(session?.ownerAddress),
+    staleTime: 300_000,
+    gcTime: 900_000,
+    retry: false,
   });
   const avatarMutation = useMutation({
     mutationKey: ["profile", "avatar"],
@@ -84,11 +91,6 @@ export function useProfileViewModel() {
       router.replace("/login");
     }
   }, [isMagicLoading, router, session?.ownerAddress]);
-
-  useEffect(() => {
-    if (!session?.ownerAddress) return;
-    void getMyUsername(session.ownerAddress).then((identity) => setUsername(identity?.username || null)).catch(() => setUsername(null));
-  }, [session?.ownerAddress]);
 
   const delegateMutation = useMutation({
     mutationFn: async (chainId: number) => {
@@ -231,7 +233,8 @@ export function useProfileViewModel() {
     openUniversalAccountSheet,
     ownerAddress,
     profileEmail: session?.email || null,
-    username,
+    username: usernameQuery.data?.username || null,
+    isUsernameLoading: usernameQuery.isPending,
     avatarUrl: profileQuery.data?.avatar_url || null,
     isAvatarUploading: avatarMutation.isPending,
     uploadAvatar,

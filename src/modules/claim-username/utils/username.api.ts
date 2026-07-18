@@ -34,6 +34,13 @@ export async function resolveUsername(username: string, chainId: number) {
   return identity;
 }
 
+export async function searchUsernames(query: string, chainId: number) {
+  const response = await fetch(`/api/usernames/search?q=${encodeURIComponent(query)}&chain_id=${chainId}`, { cache: "no-store" });
+  const payload = await response.json().catch(() => ({})) as { identities?: UsernameIdentity[]; error?: string };
+  if (!response.ok) throw new Error(payload.error || "Unable to search usernames.");
+  return payload.identities || [];
+}
+
 export async function getMyUsername(ownerAddress: string) {
   const response = await fetch(`/api/usernames/owner/${encodeURIComponent(ownerAddress)}`, { cache: "no-store" });
   const payload = await readPayload(response);

@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
-import { resolveUsername } from "@/modules/username/utils/username.api";
+import { searchUsernames } from "@/modules/username/utils/username.api";
 import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
 import {
@@ -57,24 +57,17 @@ export function useSendState(
   const usernameSearch = query.trim().replace(/^@/, "").toLowerCase();
   const usernameQuery = useQuery({
     queryKey: ["username", "search", usernameSearch, Number(initialChain) || DEFAULT_CHAIN_ID],
-    queryFn: () => resolveUsername(usernameSearch, Number(initialChain) || DEFAULT_CHAIN_ID),
-    enabled: /^[a-z0-9_]{3,20}$/.test(usernameSearch),
+    queryFn: () => searchUsernames(usernameSearch, Number(initialChain) || DEFAULT_CHAIN_ID),
+    enabled: /^[a-z0-9_]{1,20}$/.test(usernameSearch),
     staleTime: 60_000,
     retry: false,
   });
   const usernameRecipient = React.useMemo(() => {
-    const identity = usernameQuery.data;
-    if (!identity?.address) return null;
-    return {
-      id: identity.username,
-      handle: identity.username,
-      name: "mom3 user",
-      address: identity.address,
-      network: initialChain || "Universal",
-      status: "Verified" as const,
-      color: "from-[#3B33BD] to-[#7E78EA]",
-      avatarUrl: identity.avatar_url,
-    };
+    const identities = usernameQuery.data || [];
+    return identities.filter((identity) => identity.address).map((identity) => ({
+      id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address as string,
+      network: initialChain || "Universal", status: "Verified" as const, color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url,
+    }));
   }, [initialChain, usernameQuery.data]);
 
   /* â”€â”€ Derived token rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -142,7 +135,7 @@ export function useSendState(
     );
     const filtered = combined.filter((recipient) => matchesRecipient(recipient, query));
 
-    if (usernameRecipient) return [usernameRecipient, ...filtered.filter((item) => item.address !== usernameRecipient.address)];
+    if (usernameRecipient.length > 0) return [...usernameRecipient, ...filtered.filter((item) => !usernameRecipient.some((username) => item.address === username.address))];
     if (filtered.length > 0) return filtered;
 
     const resolved = resolveRecipient(query, recentRecipients);
@@ -205,7 +198,7 @@ export function useSendState(
       selectRecipient(resolved);
       return;
     }
-    if (usernameRecipient) return;
+    if (usernameRecipient.length > 0) return;
     if (!resolved) {
       setError("Recipient not found. Enter a valid mom3 tag or wallet address.");
     }
@@ -253,7 +246,7 @@ export function useSendState(
     selectedTokenIsPrefilled,
     filteredRecipients,
     showRecentLabel,
-    isSearchingUsername: usernameQuery.isFetching && !usernameRecipient,
+    isSearchingUsername: usernameQuery.isFetching && usernameSearch.length > 0,
     canSend,
     // actions
     resetCompose,
