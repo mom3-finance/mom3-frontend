@@ -1,3 +1,5 @@
+import type { MarketAnalysisResponse } from "@/modules/explore/types/market-detail.types";
+
 export type MarketListParams = {
   page?: number;
   limit?: number;
@@ -59,7 +61,11 @@ export function getTopYields(params: { limit?: number; chainId?: number } = {}) 
 }
 
 export function getMarketDetail(marketId: string) {
-  return apiFetch<{ market?: any; timestamp?: string }>(`/api/ai/markets/${encodeURIComponent(marketId)}`);
+  return apiFetch<{ market?: unknown; timestamp?: string }>(`/api/ai/markets/${encodeURIComponent(marketId)}`);
+}
+
+export function getMarketAnalysis(marketId: string) {
+  return apiFetch<MarketAnalysisResponse>(`/api/ai/markets/${encodeURIComponent(marketId)}/analysis`);
 }
 
 export function getMarketHistory(marketId: string, range = "30d") {

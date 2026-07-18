@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { MiniChart } from "@/components/ui/mini-chart";
 import { MobilePageHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { Typography } from "@/components/ui/typography";
+import { useMarketAnalysisInfinite } from "./hooks/useMarketAnalysisInfinite";
+import type { MarketAnalysisItem } from "./types/market-analysis.types";
 import { fallbackOpportunities } from "./components/StrategyResponse";
 import type { AiStrategy, StrategyOpportunity } from "./types/ai.types";
 
@@ -35,6 +37,29 @@ function riskLabel(score: number) {
 
 function cleanProtocol(value: string) {
   return value.replace(/\s*\([^)]*\)\s*$/, "");
+}
+
+function MarketAnalysisResults({ riskTolerance }: { riskTolerance: "conservative" | "moderate" | "aggressive" }) {
+  const analysisQuery = useMarketAnalysisInfinite({ pageSize: 10, riskTolerance });
+  const items = analysisQuery.data?.pages.flatMap((page) => page.markets) ?? [];
+  return (
+    <section className="mt-5" aria-labelledby="all-market-analysis-title">
+      <div className="flex items-end justify-between gap-3"><div><h2 id="all-market-analysis-title" className="text-lg font-black text-white">All market analysis</h2><p className="mt-1 text-xs font-medium text-[#A7A7B7]">AgentKit ranks the full PostgreSQL catalog; the first page shows 10 results.</p></div>{analysisQuery.data?.pages[0]?.analysis.market_count ? <span className="text-xs font-black text-[#ccff00]">{analysisQuery.data.pages[0].analysis.market_count.toLocaleString()} reviewed</span> : null}</div>
+      {analysisQuery.isLoading ? <div className="mt-3 rounded-2xl bg-[#111217] p-4 text-sm text-[#A7A7B7]" aria-busy="true">Reading and analysing canonical markets…</div> : analysisQuery.isError ? <div className="mt-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-4" role="alert"><p className="text-sm text-red-100">{analysisQuery.error instanceof Error ? analysisQuery.error.message : "Market analysis is unavailable."}</p><Button type="button" color="danger" size="compact" rounded="full" className="mt-3" label="Retry analysis" onClick={() => void analysisQuery.refetch()} /></div> : items.length === 0 ? <div className="mt-3 rounded-2xl bg-[#111217] p-4 text-sm text-[#A7A7B7]">No market matched this risk profile.</div> : <>
+        <div className="mt-3 space-y-3">{items.map((item) => <AnalysisResultCard key={`${item.market_id}-${item.rank}`} item={item} />)}</div>
+        {analysisQuery.hasNextPage ? <Button type="button" color="dark" size="lg" rounded="full" fullWidth className="mt-4" label={analysisQuery.isFetchingNextPage ? "Loading more analysis…" : "Load more analysis"} isDisabled={analysisQuery.isFetchingNextPage} onClick={() => void analysisQuery.fetchNextPage()} /> : <p className="mt-4 text-center text-xs font-medium text-[#777780]">All matching markets are loaded.</p>}
+      </>}
+    </section>
+  );
+}
+
+function AnalysisResultCard({ item }: { item: MarketAnalysisItem }) {
+  return <article className="rounded-[22px] border border-white/10 bg-[#111217] p-4">
+    <div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ccff00] text-sm font-black text-black">#{item.rank}</span><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-black text-white">{item.protocol} · {item.symbol || item.asset}</h3><p className="mt-1 text-xs text-[#A7A7B7]">{item.chain} · {item.analysis.market_outlook.label} outlook · {item.analysis.confidence.percent}% confidence</p></div><span className="text-right text-lg font-black text-[#5EE6B0]">{item.apy.toFixed(2)}%</span></div>
+    <p className="mt-3 text-xs leading-relaxed text-[#C8C8CE]">{item.analysis.summary}</p>
+    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-[#A7A7B7]"><span className="rounded-full bg-white/[0.06] px-2.5 py-1">TVL ${item.tvl >= 1_000_000 ? `${(item.tvl / 1_000_000).toFixed(1)}M` : item.tvl.toLocaleString()}</span><span className="rounded-full bg-white/[0.06] px-2.5 py-1">Risk {item.risk_score.toFixed(1)}/10</span><span className="rounded-full bg-white/[0.06] px-2.5 py-1">{item.analysis.recommendation}</span></div>
+    <Link href={`/explore/${encodeURIComponent(`${item.protocol}-${item.asset}`)}?chainId=${item.chain_id}&marketId=${encodeURIComponent(item.market_id)}`} className="mt-3 inline-flex min-h-10 items-center text-xs font-black text-[#ccff00] focus-visible:ring-2 focus-visible:ring-[#ccff00]">View market <AppIcon icon="lucide:arrow-right" aria-hidden="true" width={15} height={15} className="ml-1" /></Link>
+  </article>;
 }
 
 function StrategyDetail({ opportunity, reasoning }: { opportunity: StrategyOpportunity; reasoning: string }) {
@@ -231,6 +256,7 @@ export default function AiStrategyView({ selection }: { selection?: StrategySele
           <Link href="/ai" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#ccff00] px-5 text-sm font-black text-black focus-visible:ring-2 focus-visible:ring-[#ccff00]">View AI strategies</Link>
         </section>
       ) : null}
+      <MarketAnalysisResults riskTolerance={riskTolerance} />
     </MobileShell>
   );
 }
