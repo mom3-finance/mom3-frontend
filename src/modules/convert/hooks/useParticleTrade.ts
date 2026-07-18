@@ -7,7 +7,7 @@ import {
   type ITransaction,
 } from "@particle-network/universal-account-sdk";
 
-import { getSendErrorMessage, isTransactionQuoteExpired } from "@/modules/send/utils/send.utils";
+import { getSendErrorMessage, isRetryableParticleTransactionError, isTransactionQuoteExpired } from "@/modules/send/utils/send.utils";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { isParticleExecutionChainId } from "@/providers/shared/constants/chain.constants";
 import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
@@ -27,9 +27,11 @@ export function useParticleTrade() {
   const [transactionId, setTransactionId] = React.useState<string | null>(null);
   const [transaction, setTransaction] = React.useState<ITransaction | null>(null);
   const submitInFlightRef = React.useRef(false);
+  const lastRequestRef = React.useRef<ConvertRequest | null>(null);
 
   const prepare = React.useCallback(
     async (request: ConvertRequest) => {
+      lastRequestRef.current = request;
       if (!universalAccount) {
         setError("Your Universal Account is not ready. Reconnect and try again.");
         setStatus("error");
@@ -100,14 +102,21 @@ export function useParticleTrade() {
         await refreshAccount();
         return nextTransactionId;
       } catch (cause) {
-        setError(getSendErrorMessage(cause));
-        setStatus("error");
+        if (isRetryableParticleTransactionError(cause) && lastRequestRef.current) {
+          setTransaction(null);
+          setError(null);
+          await refreshAccount();
+          await prepare(lastRequestRef.current);
+        } else {
+          setError(getSendErrorMessage(cause));
+          setStatus("error");
+        }
         return null;
       } finally {
         submitInFlightRef.current = false;
       }
     },
-    [refreshAccount, signAndSend, transaction],
+    [prepare, refreshAccount, signAndSend, transaction],
   );
 
   const reset = React.useCallback(() => {
