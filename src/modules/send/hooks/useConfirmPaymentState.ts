@@ -220,7 +220,7 @@ export function useConfirmPaymentState() {
         await refreshAccount();
         await prepareTransaction();
         setError(null);
-        setNotice("The previous quote could not be verified. A fresh transaction quote is ready for review.");
+        setNotice("Transaction details have been refreshed. Please review them before confirming.");
       } else {
         setError(getSendErrorMessage(cause));
       }

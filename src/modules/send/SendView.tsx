@@ -184,6 +184,8 @@ export default function SendView() {
           }}
           onSearchSubmit={state.handleSearchSubmit}
           onSelectRecipient={state.selectRecipient}
+          onClearRecentRecipients={() => { void state.clearRecentRecipients(); }}
+          isClearingRecentRecipients={state.isClearingRecentRecipients}
         />
       )}
     </MobileShell>

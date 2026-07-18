@@ -35,3 +35,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Recent recipients are temporarily unavailable." }, { status: 502 });
   }
 }
+
+export async function DELETE(request: Request) {
+  const base = backendUrl();
+  if (!base) return NextResponse.json({ error: "Backend recipients are not configured." }, { status: 503 });
+  try {
+    const incoming = new URL(request.url);
+    const upstream = new URL("/api/recipients/recent", base);
+    incoming.searchParams.forEach((value, key) => upstream.searchParams.set(key, value));
+    const response = await fetch(upstream, { method: "DELETE", cache: "no-store" });
+    return NextResponse.json(await response.json().catch(() => ({})), { status: response.status });
+  } catch (error) {
+    console.error("Recent recipients DELETE proxy failed", error);
+    return NextResponse.json({ error: "Recent recipients are temporarily unavailable." }, { status: 502 });
+  }
+}

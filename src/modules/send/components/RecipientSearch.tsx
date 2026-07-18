@@ -16,6 +16,8 @@ export function RecipientSearch({
   onQueryChange,
   onSearchSubmit,
   onSelectRecipient,
+  onClearRecentRecipients,
+  isClearingRecentRecipients,
 }: {
   query: string;
   error: string | null;
@@ -25,6 +27,8 @@ export function RecipientSearch({
   onQueryChange: (value: string) => void;
   onSearchSubmit: () => void;
   onSelectRecipient: (recipient: Recipient) => void;
+  onClearRecentRecipients: () => void;
+  isClearingRecentRecipients: boolean;
 }) {
   return (
     <>
@@ -70,7 +74,7 @@ export function RecipientSearch({
 
       <section className="mt-5 flex-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">{showRecentLabel ? "Recent" : "Recipients"}</h2>
+          <div className="flex items-center gap-2"><h2 className="text-base font-bold text-white">{showRecentLabel ? "Recent" : "Recipients"}</h2>{showRecentLabel ? <button type="button" onClick={onClearRecentRecipients} disabled={isClearingRecentRecipients} className="text-[11px] font-bold text-[#9A9AA2] hover:text-white disabled:opacity-50">{isClearingRecentRecipients ? "Clearing…" : "Clear"}</button> : null}</div>
           <span className="rounded-full bg-[#1C1C1E] px-3 py-1 text-xs font-bold text-[#9A9AA2]">
             {filteredRecipients.length}
           </span>

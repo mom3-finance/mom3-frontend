@@ -4,7 +4,7 @@ import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
-import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
+import { clearRecentRecipients, getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
 import { searchUsernames } from "@/modules/username/utils/username.api";
 import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
@@ -62,6 +62,13 @@ export function useSendState(
     enabled: /^[a-z0-9_]{1,20}$/.test(usernameSearch),
     staleTime: 60_000,
     retry: false,
+  });
+  const clearRecipientsMutation = useMutation({
+    mutationKey: ["recipients", "clear"],
+    mutationFn: () => clearRecentRecipients(accountInfo.ownerAddress),
+    onSuccess: () => {
+      queryClient.setQueryData(["recipients", "recent", accountInfo.ownerAddress || null], []);
+    },
   });
   const usernameRecipient = React.useMemo(() => {
     const identities = usernameQuery.data || [];
@@ -264,5 +271,7 @@ export function useSendState(
     handleSearchSubmit,
     handleAmountChange,
     handleMaxAmount,
+    clearRecentRecipients: () => clearRecipientsMutation.mutateAsync(),
+    isClearingRecentRecipients: clearRecipientsMutation.isPending,
   };
 }

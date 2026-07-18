@@ -55,3 +55,12 @@ export async function saveRecentRecipient(
   const payload = await response.json().catch(() => ({}));
   return payload.recipient ? toRecipient(payload.recipient, 0) : null;
 }
+
+export async function clearRecentRecipients(ownerAddress: string) {
+  if (!ownerAddress) return false;
+  const response = await fetch(`/api/recipients/recent?owner_address=${encodeURIComponent(ownerAddress)}`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
+  return response.ok;
+}
