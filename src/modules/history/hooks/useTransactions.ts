@@ -60,6 +60,16 @@ function relativeTime(timestamp?: number | string): string {
   return new Date(ts).toLocaleDateString();
 }
 
+function deduplicateTransactions<T extends Record<string, unknown>>(transactions: T[]) {
+  const seen = new Set<string>();
+  return transactions.filter((transaction) => {
+    const id = String(transaction.transactionId || transaction.id || transaction.hash || "");
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
 function summarizeTransaction(raw: any): RealHistoryItem {
   const id = String(raw?.transactionId || raw?.id || raw?.hash || Math.random());
   const status = normalizeStatus(raw?.status ?? raw?.transactionStatus);
@@ -148,20 +158,24 @@ export function useTransactions(limit = 20) {
     queryFn: async () => {
       if (!universalAccount || !account) throw new Error("Connect your wallet to load transaction history.");
       const pageSize = Math.max(limit, 50);
-      const list: any[] = [];
+      const list: Record<string, unknown>[] = [];
       for (let page = 1; page <= 20; page += 1) {
         const response = await universalAccount.getTransactions(page, pageSize);
         const pageItems = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
-        list.push(...pageItems);
+        list.push(...pageItems as Record<string, unknown>[]);
         if (pageItems.length < pageSize) break;
       }
-      const synced = list.length ? await syncHistory(account, list) : false;
+      const uniqueList = deduplicateTransactions(list);
+      const synced = uniqueList.length ? await syncHistory(account, uniqueList) : false;
       if (synced) {
         const storedResponse = await fetch(`/api/history?account=${encodeURIComponent(account)}&limit=${pageSize}`, { cache: "no-store" });
         const storedPayload = await storedResponse.json().catch(() => ({}));
-        if (storedResponse.ok && Array.isArray(storedPayload?.items)) return storedPayload.items.map(mapStoredActivity);
+        if (storedResponse.ok && Array.isArray(storedPayload?.items)) {
+          const storedItems = deduplicateTransactions(storedPayload.items as Record<string, unknown>[]);
+          return storedItems.map(mapStoredActivity);
+        }
       }
-      return list.map(summarizeTransaction);
+      return uniqueList.map(summarizeTransaction);
     },
     staleTime: 5_000,
     refetchInterval: 8_000,
