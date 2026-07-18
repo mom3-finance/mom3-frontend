@@ -52,7 +52,8 @@ export function ProfileHeroCard({
         />
         {onAvatarChange ? <><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={isAvatarUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) onAvatarChange(file); event.currentTarget.value = ""; }} /><span className="absolute bottom-0 right-0 rounded-full bg-[#ccff00] px-2 py-1 text-[10px] font-black text-black">{isAvatarUploading ? "…" : "Edit"}</span></> : null}
         </label>
-        <div className="mt-3 flex items-center justify-center gap-1.5">
+        <div className="mt-3 flex min-h-7 items-center justify-center gap-1.5">
+          {isUsernameLoading ? <span className="h-5 w-24 animate-pulse rounded bg-white/10" aria-label="Loading username" /> : null}
           {username ? <>
             <h2 className="text-xl font-black tracking-tight text-white">{username}</h2>
             <AppIcon

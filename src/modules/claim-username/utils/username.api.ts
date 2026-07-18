@@ -13,6 +13,7 @@ export async function claimUsername(input: ClaimUsernameInput) {
       owner_address: input.ownerAddress,
       chain_id: input.chainId,
       address: input.address,
+      solana_address: input.solanaAddress,
     }),
     cache: "no-store",
   });

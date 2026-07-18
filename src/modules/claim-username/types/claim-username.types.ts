@@ -11,4 +11,5 @@ export type ClaimUsernameInput = {
   ownerAddress: string;
   chainId: number;
   address: string;
+  solanaAddress?: string;
 };
