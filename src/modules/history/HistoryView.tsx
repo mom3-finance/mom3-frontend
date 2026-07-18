@@ -22,7 +22,7 @@ export default function HistoryView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
-  const { items: realItems, isLoading, error } = useTransactions();
+  const { items: realItems, isLoading, isFetching, error } = useTransactions();
 
   // Real on-chain transactions replace the mock "me" list.
   const myHistoryItems: RealHistoryItem[] = realItems;
@@ -150,18 +150,11 @@ export default function HistoryView() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              {isLoading ? (
-                <div className="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[28px] bg-[#1C1C1E] px-6 text-center">
-                  <AppIcon
-                    icon="lucide:loader-circle"
-                    aria-hidden="true"
-                    width={32}
-                    height={32}
-                    className="animate-spin text-[#9A9AA2]"
-                  />
-                  <p className="mt-3 text-sm font-medium text-[#9A9AA2]">Loading on-chain history…</p>
+              {isLoading && activeItems.length === 0 ? (
+                <div className="mt-4 overflow-hidden rounded-[28px] bg-[#1C1C1E]" aria-busy="true" aria-label="Loading history">
+                  {[1, 2, 3].map((row) => <div key={row} className="flex min-h-[78px] items-center gap-3 border-b border-white/5 px-4 py-3 last:border-0"><span className="h-11 w-11 animate-pulse rounded-full bg-white/10" /><span className="min-w-0 flex-1 space-y-2"><span className="block h-4 w-2/5 animate-pulse rounded bg-white/10" /><span className="block h-3 w-3/5 animate-pulse rounded bg-white/10" /></span><span className="w-16 space-y-2"><span className="block h-3 w-full animate-pulse rounded bg-white/10" /><span className="ml-auto block h-2.5 w-3/5 animate-pulse rounded bg-white/10" /></span></div>)}
                 </div>
-              ) : error ? (
+              ) : error && activeItems.length === 0 ? (
                 <div className="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[28px] bg-[#1C1C1E] px-6 text-center">
                   <AppIcon
                     icon="solar:danger-triangle-bold"
@@ -254,6 +247,7 @@ export default function HistoryView() {
                   </p>
                 </motion.div>
               )}
+              {isFetching && !isLoading ? <p className="mt-2 text-right text-[11px] font-semibold text-[#77777f]">Updating…</p> : null}
             </motion.div>
           </AnimatePresence>
         </section>

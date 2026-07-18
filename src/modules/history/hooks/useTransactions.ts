@@ -27,6 +27,14 @@ export type RealHistoryItem = {
   explorerUrl?: string | null;
 };
 
+export type HistoryTransactionType = "receive" | "send" | "supply" | "withdraw" | "convert" | "fee" | "transaction";
+const transactionPresentation: Record<HistoryTransactionType, { icon: string; tone: RealHistoryItem["tone"] }> = {
+  receive: { icon: "solar:wallet-money-bold", tone: "green" }, send: { icon: "solar:plain-bold", tone: "blue" },
+  supply: { icon: "solar:pie-chart-2-bold", tone: "purple" }, withdraw: { icon: "solar:hand-money-bold", tone: "purple" },
+  convert: { icon: "solar:transfer-horizontal-bold", tone: "blue" }, fee: { icon: "solar:bill-list-bold", tone: "blue" }, transaction: { icon: "solar:transfer-horizontal-bold", tone: "blue" },
+};
+function presentationFor(value: unknown) { return transactionPresentation[String(value || "transaction") as HistoryTransactionType] || transactionPresentation.transaction; }
+
 function normalizeStatus(value: unknown): HistoryStatus {
   const text = String(value ?? "").toLowerCase();
   const numeric = Number(value);
@@ -100,6 +108,7 @@ function mapStoredActivity(raw: any): RealHistoryItem {
   const usd = Number(amount.usd || 0);
   const symbol = String(amount.symbol || "");
   const direction = amount.direction === "in" ? "+" : amount.direction === "out" ? "-" : "";
+  const presentation = presentationFor(raw.action || raw.activityType);
   return {
     id: String(raw.transactionId),
     title: String(raw.title || "Transaction"),
@@ -110,8 +119,8 @@ function mapStoredActivity(raw: any): RealHistoryItem {
     network: String(raw.network || "Universal"),
     reference: String(raw.reference || raw.transactionId),
     note: String(raw.note || "Transaction confirmed through Particle Universal Account."),
-    icon: String(raw.icon || "solar:transfer-horizontal-bold"),
-    tone: raw.tone === "green" || raw.tone === "purple" ? raw.tone : "blue",
+    icon: presentation.icon,
+    tone: presentation.tone,
     activityType: String(raw.activityType || "transaction"),
     protocol: raw.protocol || null,
     transactionHash: raw.transactionHash || null,
@@ -157,6 +166,7 @@ export function useTransactions(limit = 20) {
   return {
     items: query.data || [],
     isLoading: query.isPending,
+    isFetching: query.isFetching,
     error: !account && !universalAccount ? "Connect your wallet to load transaction history." : query.error instanceof Error ? query.error.message : null,
     reload: () => query.refetch(),
   };
