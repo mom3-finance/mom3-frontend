@@ -22,6 +22,13 @@ export type MarketListResponse = {
   protocol_totals?: Record<string, number> | null;
 };
 
+export type TopYieldResponse = {
+  timestamp?: string;
+  data_source?: string;
+  analysis?: { engine?: string; scope?: string; market_count?: number; ranking?: string };
+  markets?: unknown[];
+};
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, { cache: "no-store", ...init });
   const payload = await response.json().catch(() => ({}));
@@ -43,6 +50,12 @@ export function getMarkets(params: MarketListParams = {}) {
   if (params.executionOnly) query.set("execution_only", "true");
   if (params.limitPerProtocol) query.set("limit_per_protocol", String(params.limitPerProtocol));
   return apiFetch<MarketListResponse>(`/api/ai/markets?${query}`);
+}
+
+export function getTopYields(params: { limit?: number; chainId?: number } = {}) {
+  const query = new URLSearchParams({ limit: String(Math.min(10, Math.max(1, params.limit || 10))) });
+  if (params.chainId) query.set("chain_id", String(params.chainId));
+  return apiFetch<TopYieldResponse>(`/api/ai/top-yields?${query}`);
 }
 
 export function getMarketDetail(marketId: string) {
