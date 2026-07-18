@@ -59,7 +59,6 @@ export function UniversalAccountProvider({ children }: UniversalAccountProviderP
       isLoading:
         universalAccountQuery.isLoading ||
         snapshotQuery.isLoading ||
-        snapshotQuery.isFetching ||
         ensureDelegatedMutation.isPending,
       error:
         universalAccountQuery.error?.message ||

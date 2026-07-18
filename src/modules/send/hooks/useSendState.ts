@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { clearRecentRecipients, getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
 import { searchUsernames } from "@/modules/username/utils/username.api";
+import { formatUsername } from "@/lib/username";
 import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
 import {
@@ -73,7 +74,7 @@ export function useSendState(
   const usernameRecipient = React.useMemo(() => {
     const identities = usernameQuery.data || [];
     return identities.map((identity) => ({
-      id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address as string,
+      id: identity.username, handle: formatUsername(identity.username) || identity.username, name: "mom3 user", address: identity.address as string,
       network: requestedChainId === 101 ? "Solana" : initialChain || "Universal", status: "Verified" as const, color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url,
     })).filter((recipient) => Boolean(recipient.address));
   }, [initialChain, requestedChainId, usernameQuery.data]);

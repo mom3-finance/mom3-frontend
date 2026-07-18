@@ -179,7 +179,7 @@ export function YieldPositionAction({
               View transaction details <AppIcon icon="lucide:external-link" aria-hidden="true" width={16} height={16} />
             </a>
           </div>
-          <div className="mt-auto pt-6"><Button type="button" color={failed ? "danger" : "warning"} size="lg" rounded="full" fullWidth label="Back to market" startIcon="solar:alt-arrow-left-bold" onClick={() => { void Promise.all([refreshPosition(), onRefresh()]); resetFlow(); }} /></div>
+          <div className="mt-auto pt-6"><Button type="button" color={failed ? "danger" : "warning"} size="lg" rounded="full" fullWidth label="Back to market" startIcon="lucide:arrow-left" onClick={() => { void Promise.all([refreshPosition(), onRefresh()]); resetFlow(); }} /></div>
         </div>
       </motion.section>
     );
@@ -264,7 +264,7 @@ export function YieldPositionAction({
       <form onSubmit={submit} className="mx-auto flex min-h-full w-full max-w-md flex-col px-5 pt-4 pb-[calc(24px+env(safe-area-inset-bottom))]">
         <div className="relative flex min-h-16 items-center justify-center px-14">
           <Typography id="yield-action-title" as="h2" variant="h2" align="center">{screenTitle}</Typography>
-          <Button type="button" color="transparent" size="icon" rounded="full" startIcon="solar:alt-arrow-left-bold" aria-label="Close action" className="absolute left-0 text-white" onClick={resetFlow} />
+          <Button type="button" color="transparent" size="icon" rounded="full" startIcon="lucide:arrow-left" aria-label="Close action" className="absolute left-0 text-white" onClick={resetFlow} />
         </div>
 
         <div className="mt-2 flex justify-center">
@@ -348,7 +348,7 @@ export function YieldPositionAction({
             </div>
 
             {active.error ? <p className="mt-2 text-center text-xs font-semibold text-red-200" role="alert">{active.error}</p> : null}
-            <Button type="submit" color="primary" size="lg" rounded="full" fullWidth className="mt-3" label={`Review ${actionLabel.toLowerCase()}`} startIcon="solar:alt-arrow-right-bold" isLoading={active.isPreparing} isDisabled={!validAmount} aria-busy={active.isPreparing} />
+            <Button type="submit" color="primary" size="lg" rounded="full" fullWidth className="mt-3" label={`Review ${actionLabel.toLowerCase()}`} startIcon="lucide:arrow-right" isLoading={active.isPreparing} isDisabled={!validAmount || active.isPreparing} aria-busy={active.isPreparing} />
           </div>
         ) : null}
 

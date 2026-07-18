@@ -17,6 +17,7 @@ import type {
 } from "@/modules/profile/types/profile.types";
 import { getMyUsername } from "@/modules/username/utils/username.api";
 import { getUserProfile, uploadProfileAvatar } from "../utils/profile.api";
+import { formatUsername } from "@/lib/username";
 
 function nativeGasToken(chainId: number) {
   if (chainId === 56) return "BNB";
@@ -236,7 +237,7 @@ export function useProfileViewModel() {
     openUniversalAccountSheet,
     ownerAddress,
     profileEmail: session?.email || null,
-    username: usernameQuery.data?.username || null,
+    username: formatUsername(usernameQuery.data?.username),
     isUsernameLoading: usernameQuery.isPending,
     avatarUrl: profileQuery.data?.avatar_url || null,
     isAvatarUploading: avatarMutation.isPending,

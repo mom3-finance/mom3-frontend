@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Delete } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { TokenAssetBadge } from "@/modules/send/components/TokenAssetBadge";
@@ -59,6 +60,21 @@ export function AmountInput({
           rounded="full"
           className="flex h-10 min-w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 px-3 text-xs font-black text-[#8F89FF] transition-colors hover:bg-[#3B33BD]/30 focus-visible:ring-2 focus-visible:ring-[#3B33BD] disabled:cursor-not-allowed disabled:opacity-50"
         />
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="Amount keypad">
+        {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "backspace"].map((key) => (
+          <button
+            key={key}
+            type="button"
+            aria-label={key === "backspace" ? "Delete last digit" : key === "." ? "Decimal point" : `Number ${key}`}
+            disabled={(key === "backspace" && amount.length === 0) || (key === "." && amount.includes("."))}
+            onClick={() => onAmountChange(key === "backspace" ? amount.slice(0, -1) : key === "." ? (amount ? `${amount}.` : "0.") : amount === "0" ? key : `${amount}${key}`)}
+            className="flex h-12 items-center justify-center rounded-full bg-white/[0.03] font-mono text-xl font-black tabular-nums text-white transition-colors hover:bg-[#3B33BD]/20 active:scale-95 disabled:opacity-25 focus-visible:ring-2 focus-visible:ring-[#3B33BD] motion-reduce:transition-none"
+          >
+            {key === "backspace" ? <Delete className="h-5 w-5" aria-hidden="true" /> : key}
+          </button>
+        ))}
       </div>
 
       <div className="mt-2 flex items-center justify-between text-xs font-semibold text-[#9A9AA2]">

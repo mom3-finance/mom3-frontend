@@ -11,7 +11,9 @@ export function usePortfolioPerformance(totalValue: number) {
   return useQuery({
     queryKey: ["portfolio-performance", account, totalValue],
     enabled: Boolean(universalAccount && account),
-    staleTime: 30_000,
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const response = await universalAccount!.getTransactions(1, 50);
       const transactions = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];

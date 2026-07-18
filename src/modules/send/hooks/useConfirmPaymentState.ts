@@ -23,6 +23,7 @@ import {
 } from "@/modules/send/utils/send.utils";
 import { syncHistory } from "@/modules/history/api/history.api";
 import { resolveUsername } from "@/modules/username/utils/username.api";
+import { formatUsername } from "@/lib/username";
 
 export function useConfirmPaymentState() {
   const searchParams = useSearchParams();
@@ -32,6 +33,7 @@ export function useConfirmPaymentState() {
   const asset = searchParams.get("asset") ?? "";
   const chain = searchParams.get("chain") ?? "";
   const amount = searchParams.get("amount") ?? "";
+  const from = searchParams.get("from") === "dashboard" ? "dashboard" : "assets";
 
   const {
     universalAccount,
@@ -81,7 +83,7 @@ export function useConfirmPaymentState() {
     if (isUsernameLookup && selectedToken) {
       void resolveUsername(to.trim(), selectedToken.chainId).then((identity) => {
         const chainAddress = identity.addresses?.[String(selectedToken.chainId)] || identity.address;
-        if (!cancelled && chainAddress) setRecipient({ id: identity.username, handle: identity.username, name: "mom3 user", address: chainAddress, network: selectedToken.chainName, status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url });
+        if (!cancelled && chainAddress) setRecipient({ id: identity.username, handle: formatUsername(identity.username) || identity.username, name: "mom3 user", address: chainAddress, network: selectedToken.chainName, status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url });
       }).catch(() => { if (!cancelled) setError("Username was not found on the selected chain."); });
     }
     if (isUsernameLookup) {
@@ -234,6 +236,7 @@ export function useConfirmPaymentState() {
     if (asset) params.set("asset", asset);
     if (chain) params.set("chain", chain);
     if (amount) params.set("amount", amount);
+    params.set("from", from);
     router.push(`/send?${params.toString()}`);
   };
 

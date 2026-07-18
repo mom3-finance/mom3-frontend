@@ -1,5 +1,3 @@
-import type { MarketAnalysisResponse } from "@/modules/explore/types/market-detail.types";
-
 export type MarketListParams = {
   page?: number;
   limit?: number;
@@ -79,3 +77,4 @@ export function getMarketMetrics(marketId: string) {
     `/api/ai/markets/${encodeURIComponent(marketId)}/metrics`,
   );
 }
+import type { MarketAnalysisResponse } from "@/modules/explore/types/market-detail.types";

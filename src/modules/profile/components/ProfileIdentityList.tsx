@@ -81,7 +81,7 @@ export function ProfileIdentityList({
                     ) : null}
                   </span>
                 </span>
-                <AppIcon icon="solar:alt-arrow-right-bold" aria-hidden="true" width={18} height={18} className="shrink-0 text-[#66666D]" />
+                <AppIcon icon="lucide:arrow-right" aria-hidden="true" width={18} height={18} className="shrink-0 text-[#66666D]" />
               </button>
             ) : (
               <div

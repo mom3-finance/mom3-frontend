@@ -169,7 +169,7 @@ export default function MarketDetailView({
           <section className="mt-3 rounded-[22px] border border-white/10 bg-[#111217] p-3.5" aria-labelledby="risk-overview-title">
             <h2 id="risk-overview-title" className="text-sm font-black text-white">Risk overview</h2>
             <dl className="mt-3 grid grid-cols-3 overflow-hidden rounded-[18px] bg-white/[0.04] text-xs">
-              {[["Risk", liveMarket.risk], ["Utilization", liveMarket.utilization], ["Outlook", catalogDetail.metadata.analysis?.market_outlook.label || catalogDetail.metadata.predictionClass || liveMarket.secondary]].map(([label, value], index) => (
+              {[["Risk", liveMarket.risk], ["Utilization", liveMarket.utilization], ["Outlook", catalogDetail.metadata.predictionClass || liveMarket.secondary]].map(([label, value], index) => (
                 <div key={label} className={cn("p-3", index < 2 && "border-r border-white/10")}><dt className="font-medium text-[#A7A7B7]">{label}</dt><dd className="mt-1.5 font-mono font-black text-white">{value}</dd></div>
               ))}
             </dl>

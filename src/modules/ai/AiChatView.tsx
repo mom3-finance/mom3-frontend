@@ -10,14 +10,10 @@ import { MobileHeader, MobileShell } from "@/components/ui/mobile-shell";
 import { ChatEmptyState } from "./components/ChatEmptyState";
 import { StrategyResponse } from "./components/StrategyResponse";
 import type { AiStrategy } from "./types/ai.types";
+import { StrategyModeCard } from "@/modules/dashboard/components/StrategyModeCard";
+import { portfolioModes } from "@/modules/dashboard/constants/dashboard";
 
 type RiskTolerance = "conservative" | "moderate" | "aggressive";
-
-const riskModes: Array<{ value: RiskTolerance; label: string; description: string }> = [
-  { value: "conservative", label: "Safe", description: "Prioritize lower risk" },
-  { value: "moderate", label: "Balanced", description: "Balance risk and APY" },
-  { value: "aggressive", label: "Degen", description: "Prioritize higher APY" },
-];
 
 function SearchingStrategyOverlay() {
   return (
@@ -86,36 +82,15 @@ export default function AiChatView() {
     <MobileShell contentClassName="pb-10 pt-20">
       <MobileHeader title="mom3 /agent" backHref="/dashboard" backLabel="Back to dashboard" />
 
-      <section className="mt-4 rounded-[24px] border border-white/10 bg-[#111217] p-4" aria-labelledby="risk-mode-title">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p id="risk-mode-title" className="text-sm font-black text-white">Strategy mode</p>
-            <p className="mt-1 text-xs font-medium text-[#A7A7B7]">AI will search markets using this risk profile.</p>
-          </div>
-          <AppIcon icon="solar:tuning-2-bold" aria-hidden="true" width={20} height={20} className="text-[#ccff00]" />
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Strategy risk mode">
-          {riskModes.map((mode) => {
-            const active = riskTolerance === mode.value;
-            return (
-              <button
-                key={mode.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => {
-                  setRiskTolerance(mode.value);
-                  window.localStorage.setItem("mom3-risk-tolerance", mode.value);
-                }}
-                className={`rounded-2xl border px-2 py-3 text-center transition-colors ${active ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]" : "border-white/10 bg-black/20 text-[#A7A7B7]"}`}
-              >
-                <span className="block text-xs font-black">{mode.label}</span>
-                <span className="mt-1 block text-[10px] font-medium leading-tight">{mode.description}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      <StrategyModeCard
+        activeModeIndex={riskTolerance === "aggressive" ? 0 : riskTolerance === "conservative" ? 2 : 1}
+        activeMode={portfolioModes[riskTolerance === "aggressive" ? 0 : riskTolerance === "conservative" ? 2 : 1] ?? portfolioModes[1]}
+        onSelectMode={(index) => {
+          const nextRisk = index === 0 ? "aggressive" : index === 2 ? "conservative" : "moderate";
+          setRiskTolerance(nextRisk);
+          window.localStorage.setItem("mom3-risk-tolerance", nextRisk);
+        }}
+      />
 
       {!strategy && !error ? (
         <section className="flex min-h-[calc(100dvh-8rem)] items-center justify-center pb-10">
