@@ -54,7 +54,7 @@ export const currencyOptions: Record<CurrencyCode, CurrencyOption> = {
 export const quickActionLinks: QuickActionLink[] = [
   {
     label: "Send",
-    href: "/send",
+    href: "/send?from=dashboard",
     icon: "send",
     className: "bg-[#242426] text-white",
   },

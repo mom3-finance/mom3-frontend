@@ -109,9 +109,6 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         getMarketHistory(marketId, "30d"),
       ]);
       const metrics = metricsResult.status === "fulfilled" ? metricsResult.value.metrics || {} : {};
-      const analysis: MarketDetailAnalysis | null = analysisResult.status === "fulfilled"
-        ? analysisResult.value.analysis || null
-        : null;
       let executionEnabled = live.execution?.enabled === true;
       if (allowlistResult.status === "fulfilled" && allowlistResult.value.ok) {
         const allowlistPayload = await allowlistResult.value.json().catch(() => ({}));
@@ -182,7 +179,7 @@ export function useYieldMarketDetail(seed: MarketDetail, marketId?: string) {
         sourceUrl: live.source_url || null,
         currentTvl: Number(metrics.tvl ?? live.tvl ?? 0),
         tvlChart,
-        analysis,
+        analysis: analysisResult.status === "fulfilled" ? analysisResult.value.analysis || null : null,
       });
       setError(null);
     } catch (cause) {

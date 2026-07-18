@@ -118,7 +118,8 @@ export default function DepositView() {
           <Typography as="legend" variant="label" color="muted">
             Deposit network
           </Typography>
-          <div className="-mx-5 flex min-w-0 max-w-[calc(100%+2.5rem)] gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="-mx-5 min-w-0 max-w-[calc(100%+2.5rem)] touch-pan-x overflow-x-auto overscroll-x-contain px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max min-w-full gap-2">
             {depositNetworks.map((network) => {
               const isSelected = network.chainId === selectedChainId;
 
@@ -137,6 +138,7 @@ export default function DepositView() {
                 />
               );
             })}
+            </div>
           </div>
         </fieldset>
 

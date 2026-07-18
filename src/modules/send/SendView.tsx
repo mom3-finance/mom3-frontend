@@ -21,6 +21,7 @@ export default function SendView() {
   const initialAsset = searchParams.get("asset") ?? "";
   const initialChain = searchParams.get("chain") ?? "";
   const initialAmount = searchParams.get("amount") ?? "";
+  const from = searchParams.get("from") === "dashboard" ? "dashboard" : "assets";
 
   const state = useSendState(initialTo, initialAsset, initialChain, initialAmount);
   const [tokenQuery, setTokenQuery] = React.useState("");
@@ -39,6 +40,7 @@ export default function SendView() {
     params.set("asset", state.selectedToken.symbol);
     params.set("chain", state.selectedToken.chainName);
     params.set("amount", state.amount.trim());
+    params.set("from", from);
     router.push(`/send/confirm?${params.toString()}`);
   };
 
@@ -92,7 +94,7 @@ export default function SendView() {
             />
           ) : (
             <Link
-              href="/assets"
+              href={from === "dashboard" ? "/dashboard" : "/assets"}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1C1C1E] text-white transition-colors hover:bg-[#262628] focus-visible:ring-2 focus-visible:ring-[#3B33BD]"
               aria-label="Back to assets"
             >

@@ -32,7 +32,7 @@ const tabs: { id: Tab; label: string }[] = [
 const quickActions = [
   { label: "Deposit", href: "/deposit", icon: "lucide:arrow-down", className: "bg-[#3B33BD] text-white" },
   { label: "Convert", href: "/convert", icon: "lucide:refresh-cw", className: "bg-[#242426] text-white" },
-  { label: "Send", href: "/send", icon: "lucide:arrow-up", className: "bg-[#242426] text-white" },
+  { label: "Send", href: "/send?from=assets", icon: "lucide:arrow-up", className: "bg-[#242426] text-white" },
 ];
 
 const riskClassName: Record<PortfolioRisk, string> = {

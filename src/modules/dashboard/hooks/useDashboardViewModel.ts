@@ -8,6 +8,7 @@ import { formatCurrency } from "../utils/formatCurrency";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { usePortfolioPerformance } from "./usePortfolioPerformance";
 import { getMyUsername } from "@/modules/username/utils/username.api";
+import { formatUsername } from "@/lib/username";
 
 export function useDashboardViewModel() {
   const {
@@ -25,7 +26,7 @@ export function useDashboardViewModel() {
     enabled: Boolean(accountInfo.ownerAddress),
     staleTime: 300_000,
   });
-  const username = usernameQuery.data?.username || null;
+  const username = formatUsername(usernameQuery.data?.username);
 
   useEffect(() => {
     setMounted(true);

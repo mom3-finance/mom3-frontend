@@ -3,6 +3,7 @@ import "./globals.css";
 import { IconifyPreload } from "@/components/ui/iconify-preload";
 import { ServiceWorkerRegister } from "@/providers/service-worker/ServiceWorkerRegister";
 import { WalletProviders } from "@/providers/WalletProviders";
+import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 
 export const metadata: Metadata = {
   applicationName: "mom3",
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-rounded antialiased">
         <IconifyPreload />
+        <PwaInstallBanner />
         <WalletProviders>{children}</WalletProviders>
         <ServiceWorkerRegister />
       </body>

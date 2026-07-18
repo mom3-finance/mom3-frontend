@@ -14,8 +14,8 @@ export const recommendations: RecommendationItem[] = [
     ],
   },
   {
-    title: "Rebalance Suggestion",
-    description: "Shift allocation to optimize your risk-adjusted returns.",
+    title: "AI portfolio rebalancing",
+    description: "Review a risk-aware allocation update for your portfolio.",
     badge: "+0.42% APY",
     icon: "solar:chart-square-bold",
     iconTone: "text-[#5A52FF]",

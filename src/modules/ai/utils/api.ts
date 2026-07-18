@@ -96,5 +96,5 @@ function fallbackReply(message: string): string {
   if (normalized.includes("risk") || normalized.includes("volatility")) {
     return "I would reduce exposure to volatile yield positions first, then keep new deposits in USDC until the portfolio risk score returns to low.";
   }
-  return "I can compare your positions, risk level, and expected APY across chains, then suggest the smallest rebalance needed before you take action.";
+  return "I can review your portfolio risk, compare supported yield positions, and suggest a small rebalancing plan before you take action.";
 }

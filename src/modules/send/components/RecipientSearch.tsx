@@ -35,7 +35,7 @@ export function RecipientSearch({
       <label htmlFor="recipient-search" className="sr-only">
         Search with tag or address
       </label>
-      <div className="mt-5 flex h-12 items-center gap-3 rounded-2xl bg-[#1f1f21] px-4 transition-shadow focus-within:ring-2 focus-within:ring-[#3B33BD]">
+      <div className="mt-5 flex h-12 items-center gap-3 rounded-2xl bg-[#1f1f21] px-4 transition-shadow">
         <AppIcon icon="icon-park-outline:search" aria-hidden="true" width={20} height={20} className="shrink-0 text-[#9A9AA2]" />
         <input
           id="recipient-search"
