@@ -55,20 +55,21 @@ export function useSendState(
   });
   const recentRecipients = recentRecipientsQuery.data || [];
   const usernameSearch = query.trim().replace(/^@/, "").toLowerCase();
+  const requestedChainId = initialChain.toLowerCase() === "solana" ? 101 : Number(initialChain) || DEFAULT_CHAIN_ID;
   const usernameQuery = useQuery({
-    queryKey: ["username", "search", usernameSearch, Number(initialChain) || DEFAULT_CHAIN_ID],
-    queryFn: () => searchUsernames(usernameSearch, Number(initialChain) || DEFAULT_CHAIN_ID),
+    queryKey: ["username", "search", usernameSearch, requestedChainId],
+    queryFn: () => searchUsernames(usernameSearch, requestedChainId),
     enabled: /^[a-z0-9_]{1,20}$/.test(usernameSearch),
     staleTime: 60_000,
     retry: false,
   });
   const usernameRecipient = React.useMemo(() => {
     const identities = usernameQuery.data || [];
-    return identities.filter((identity) => identity.address).map((identity) => ({
+    return identities.map((identity) => ({
       id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address as string,
-      network: initialChain || "Universal", status: "Verified" as const, color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url,
-    }));
-  }, [initialChain, usernameQuery.data]);
+      network: requestedChainId === 101 ? "Solana" : initialChain || "Universal", status: "Verified" as const, color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url,
+    })).filter((recipient) => Boolean(recipient.address));
+  }, [initialChain, requestedChainId, usernameQuery.data]);
 
   /* â”€â”€ Derived token rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -186,6 +187,13 @@ export function useSendState(
   };
 
   const selectToken = (token: TokenRow) => {
+    if (selectedRecipient?.handle.startsWith("@")) {
+      const identity = (usernameQuery.data || []).find((item) => item.username.toLowerCase() === selectedRecipient.handle.toLowerCase());
+      const chainAddress = identity?.addresses?.[String(token.chainId)] || (token.chainId === 101 ? null : identity?.address);
+      if (chainAddress) {
+        setSelectedRecipient({ ...selectedRecipient, address: chainAddress, network: token.chainName });
+      }
+    }
     setSelectedTokenId(token.id);
     setAmount("");
     setError(null);
