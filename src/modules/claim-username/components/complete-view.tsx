@@ -130,20 +130,8 @@ export default function CompleteView({
           <span className="text-sm font-semibold text-white">@{handleValue}</span>
         </div>
         <div className="flex items-center justify-between p-3 border-b border-[#2A2A3E]">
-          <span className="text-sm text-[#9A9AA2]">Network</span>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-[#3B33BD] flex items-center justify-center">
-              <div className="w-2.5 h-0.5 bg-white rounded-full" />
-            </div>
-            <span className="text-sm font-semibold text-white">Base</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-between p-3 border-b border-[#2A2A3E]">
-          <span className="text-sm text-[#9A9AA2]">Transaction</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-white">0x4f3h...8a7d</span>
-            <ExternalLink className="w-4 h-4 text-[#9A9AA2]" aria-hidden="true" />
-          </div>
+          <span className="text-sm text-[#9A9AA2]">Registration</span>
+          <span className="text-sm font-semibold text-[#ccff00]">Free</span>
         </div>
         <div className="flex items-center justify-between p-3">
           <span className="text-sm text-[#9A9AA2]">Date</span>
