@@ -15,6 +15,7 @@ import type {
   ProfileIdentityRow,
   UniversalAccountRow,
 } from "@/modules/profile/types/profile.types";
+import { getMyUsername } from "@/modules/username/api/username.api";
 
 function nativeGasToken(chainId: number) {
   if (chainId === 56) return "BNB";
@@ -63,12 +64,18 @@ export function useProfileViewModel() {
   const [eip7702Open, setEip7702Open] = React.useState(false);
   const [delegatingChainId, setDelegatingChainId] = React.useState<number | null>(null);
   const [delegationError, setDelegationError] = React.useState<string | null>(null);
+  const [username, setUsername] = React.useState<string | null>(null);
 
   useEffect(() => {
     if (!isMagicLoading && !session?.ownerAddress) {
       router.replace("/login");
     }
   }, [isMagicLoading, router, session?.ownerAddress]);
+
+  useEffect(() => {
+    if (!session?.ownerAddress) return;
+    void getMyUsername(session.ownerAddress).then((identity) => setUsername(identity?.username || null)).catch(() => setUsername(null));
+  }, [session?.ownerAddress]);
 
   const delegateMutation = useMutation({
     mutationFn: async (chainId: number) => {
@@ -198,6 +205,7 @@ export function useProfileViewModel() {
     openUniversalAccountSheet,
     ownerAddress,
     profileEmail: session?.email || null,
+    username,
     setUniversalAccountOpen,
     onEip7702OpenChange: handleEip7702OpenChange,
     universalAccountError,

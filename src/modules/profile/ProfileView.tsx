@@ -51,6 +51,7 @@ export default function ProfileView() {
         email={profile.profileEmail}
         ownerAddress={profile.ownerAddress}
         stats={profileStats}
+        username={profile.username}
       />
 
       <ProfileUpgradeSection

@@ -11,12 +11,14 @@ type ProfileHeroCardProps = {
   email: string | null;
   ownerAddress: string;
   stats: ProfileStat[];
+  username?: string | null;
 };
 
 export function ProfileHeroCard({
   email,
   ownerAddress,
   stats,
+  username,
 }: ProfileHeroCardProps) {
   return (
     <motion.section
@@ -38,7 +40,7 @@ export function ProfileHeroCard({
           className="mx-auto shadow-[0_14px_34px_-14px_rgba(59,51,189,0.9)] ring-4 ring-black/25"
         />
         <div className="mt-3 flex items-center justify-center gap-1.5">
-          <h2 className="text-xl font-black tracking-tight text-white">@ubayy</h2>
+          <h2 className="text-xl font-black tracking-tight text-white">{username || "@username"}</h2>
           <AppIcon
             icon="material-symbols:verified-rounded"
             aria-hidden="true"

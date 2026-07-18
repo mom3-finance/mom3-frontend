@@ -4,6 +4,8 @@ import * as React from "react";
 
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { getRecentRecipients, saveRecentRecipient } from "@/modules/send/api/recent-recipients.api";
+import { resolveUsername } from "@/modules/username/api/username.api";
+import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
 import type { Recipient, TokenRow } from "@/modules/send/types/send.types";
 import {
   findPreferredToken,
@@ -194,13 +196,27 @@ export function useSendState(
     setError("QR scanner is not connected yet. Paste a wallet address instead.");
   };
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     const resolved = resolveRecipient(query, recentRecipients);
-    if (!resolved) {
-      setError("Recipient not found. Enter a valid mom3 tag or wallet address.");
+    if (resolved) {
+      selectRecipient(resolved);
       return;
     }
-    selectRecipient(resolved);
+    if (query.trim().startsWith("@")) {
+      try {
+        const identity = await resolveUsername(query.trim(), Number(initialChain) || DEFAULT_CHAIN_ID);
+        if (identity.address) {
+          selectRecipient({ id: identity.username, handle: identity.username, name: "mom3 user", address: identity.address, network: initialChain || "Universal", status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]" });
+          return;
+        }
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Username was not found.");
+        return;
+      }
+    }
+    if (!resolved) {
+      setError("Recipient not found. Enter a valid mom3 tag or wallet address.");
+    }
   };
 
   const handleAmountChange = (value: string) => {
