@@ -46,10 +46,11 @@ export function prepareSponsoredTransaction(
 ): ITransaction {
   const required = options.required ?? isGasSponsorshipRequired();
 
-  // User-paid mode must keep Particle's normal UserOperation and fee quote.
-  // Do this before inspecting `gasless`: Particle may still return a gasless
-  // quote even when the application has disabled Paymaster sponsorship.
-  if (!required) return structuredClone(transaction);
+  // Prefer Particle's gasless route whenever the quote contains one. This is
+  // important for cross-chain and Solana transfers, where the destination
+  // chain's native gas token may not exist in the user's balance. Fall back
+  // to the normal fee quote when sponsorship is unavailable.
+  if (!required && !getSponsoredFeeQuote(transaction)) return structuredClone(transaction);
 
   if (
     transaction.additionalData?.mom3GasSponsorship === SPONSORSHIP_MARKER &&
@@ -97,10 +98,6 @@ export function getActiveFeeQuote(
   transaction: ITransaction | null | undefined,
 ): IFeeQuote | null {
   if (!transaction) return null;
-
-  if (!isGasSponsorshipRequired()) {
-    return transaction.feeQuotes?.[0] ?? null;
-  }
 
   return (
     getSponsoredFeeQuote(transaction) ??
