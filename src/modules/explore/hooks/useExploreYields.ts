@@ -4,7 +4,7 @@ import * as React from "react";
 import { chainNameFromId } from "@/lib/chain";
 import { formatUsdValue } from "@/lib/format";
 import { useRealtime } from "@/providers/realtime/components/RealtimeProvider";
-import { getMarkets } from "@/modules/markets/api/markets.api";
+import { getMarkets, getTopYields } from "@/modules/markets/api/markets.api";
 
 export type ExploreYieldPool = {
   id: string; asset: string; protocol: string; protocolId?: string; primary: string; secondary: string;
@@ -12,14 +12,14 @@ export type ExploreYieldPool = {
   utilization: string; risk: "Low" | "Medium" | "High"; description: string; apy: number; tvlValue: number;
   chainId: number; chain: string; marketId?: string; executionEnabled: boolean; apyChange1d?: number;
   apyChange7d?: number; apyChange30d?: number; opportunityScore?: number; stablecoin: boolean;
-  strategy: string; estimatedPnl1dPer1k: number;
+  strategy: string; estimatedPnl1dPer1k: number; rank?: number;
 };
 
 type YieldMarketEntry = {
   market_id?: string; pool_id?: string; project?: string; protocol?: string; symbol?: string; chain?: string;
   chain_id?: number; apy?: number; apy_change_1d?: number; apy_change_7d?: number; apy_change_30d?: number;
   tvl?: number; stablecoin?: boolean; impermanent_loss?: boolean | null; trend?: string; risk_score?: number;
-  opportunity_score?: number; execution?: { enabled?: boolean };
+  opportunity_score?: number; execution?: { enabled?: boolean }; rank?: number;
 };
 
 function iconFor(symbol: string) {
@@ -45,6 +45,9 @@ export function useExploreYields(selectedProtocol?: string) {
   const [error, setError] = React.useState<string | null>(null);
   const [hasMoreByProtocol, setHasMoreByProtocol] = React.useState<Record<string, boolean>>({});
   const [loadingMoreProtocol, setLoadingMoreProtocol] = React.useState<string | null>(null);
+  const [topYieldPools, setTopYieldPools] = React.useState<ExploreYieldPool[]>([]);
+  const [isTopLoading, setIsTopLoading] = React.useState(true);
+  const [topError, setTopError] = React.useState<string | null>(null);
 
   const mapMarkets = React.useCallback((markets: YieldMarketEntry[]) => markets.flatMap((market) => {
     const protocol = String(market.protocol || "Unknown protocol");
@@ -66,7 +69,7 @@ export function useExploreYields(selectedProtocol?: string) {
       apyChange1d: Number(market.apy_change_1d ?? 0), apyChange7d: Number(market.apy_change_7d ?? 0),
       apyChange30d: Number(market.apy_change_30d ?? 0), opportunityScore: rankingScore(apy, tvl, riskScore, Number(market.opportunity_score)),
       stablecoin, strategy: market.execution?.enabled === true ? (isRisk ? "Growth yield" : stablecoin ? "Stable yield" : "Balanced yield") : "Watch only",
-      estimatedPnl1dPer1k: (apy / 100) * 1000 / 365,
+      estimatedPnl1dPer1k: (apy / 100) * 1000 / 365, rank: market.rank,
     }];
   }) as ExploreYieldPool[], []);
 
@@ -89,6 +92,21 @@ export function useExploreYields(selectedProtocol?: string) {
     void load(); return () => { cancelled = true; };
   }, [marketRevision, mapMarkets, selectedProtocol]);
 
+  React.useEffect(() => {
+    let cancelled = false;
+    setIsTopLoading(true);
+    setTopError(null);
+    getTopYields({ limit: 10 })
+      .then((response) => {
+        if (!cancelled) setTopYieldPools(mapMarkets((response.markets || []) as YieldMarketEntry[]));
+      })
+      .catch((cause) => {
+        if (!cancelled) setTopError(cause instanceof Error ? cause.message : "Unable to load top yields.");
+      })
+      .finally(() => { if (!cancelled) setIsTopLoading(false); });
+    return () => { cancelled = true; };
+  }, [marketRevision, mapMarkets]);
+
   const loadMoreProtocol = React.useCallback(async (protocolId: string) => {
     if (loadingMoreProtocol || !hasMoreByProtocol[protocolId]) return;
     setLoadingMoreProtocol(protocolId);
@@ -103,5 +121,5 @@ export function useExploreYields(selectedProtocol?: string) {
   const yieldPools = pools.filter((p) => p.category === "Yield");
   const riskPools = pools.filter((p) => p.category === "Risk");
   const chains = Array.from(new Set(pools.map((p) => p.chainId))).filter(Boolean);
-  return { pools, yieldPools, riskPools, chains, isLoading, error, hasMoreByProtocol, loadingMoreProtocol, loadMoreProtocol };
+  return { pools, yieldPools, riskPools, chains, topYieldPools, isLoading, error, topError, isTopLoading, hasMoreByProtocol, loadingMoreProtocol, loadMoreProtocol };
 }
