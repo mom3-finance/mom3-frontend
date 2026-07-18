@@ -22,8 +22,9 @@ export async function syncHistory(account: string, transactions: unknown[]) {
     body: JSON.stringify({ account, transactions }),
     cache: "no-store",
   });
+  const payload = await response.json().catch(() => ({})) as { synced?: number; received?: number };
   if (!response.ok) return false;
-  return true;
+  return Number(payload.synced || 0) > 0 || Number(payload.received || 0) === 0;
 }
 
 export async function getHistoryTransactions(account: string, limit = 50, cursor?: string) {
