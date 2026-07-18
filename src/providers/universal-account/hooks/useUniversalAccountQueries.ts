@@ -228,6 +228,12 @@ export function useSignAndSend(
         let serialized = nonceMap.get(authKey);
 
         if (!serialized) {
+          // A direct transfer is submitted from the owner EOA. Keep Magic on
+          // the authorization chain so the wallet signs the same network
+          // context that Particle put in the UserOperation.
+          if (transactionForSubmit.additionalData?.mom3DirectTransfer) {
+            await magic.evm.switchChain(authChainId);
+          }
           const authorization = await signEip7702Auth(
             auth.address,
             authChainId,
