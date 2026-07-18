@@ -9,7 +9,8 @@ export type SeniorMarketAnalysis = {
   confidence: { score: number; percent: number; label: string; explanation: string };
   market_outlook: { label: string; trend: string; probability: number; forecast_7d: number[]; reasoning: string };
   summary: string;
-  recommendation: "consider" | "watch";
+  recommendation: "consider" | "watch" | "avoid";
+  risk_policy?: { mode: "conservative" | "moderate" | "aggressive"; max_risk_score: number; within_mode: boolean; execution_ready: boolean };
   sections: Array<{ title: string; points: string[] }>;
   forecast?: { confidence?: number; trend?: string; forecast_7d?: number[] };
   liquidity_pulse?: { status?: string; pulse_score?: number };
