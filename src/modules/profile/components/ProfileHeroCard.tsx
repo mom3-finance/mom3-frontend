@@ -1,6 +1,7 @@
 "use client";
 
 import { AppIcon } from "@/components/ui/app-icon";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { WalletAvatar } from "@/components/ui/wallet-avatar";
@@ -61,6 +62,14 @@ export function ProfileHeroCard({
             />
           </> : <h2 className="text-xl font-black tracking-tight text-white">Username not claimed</h2>}
         </div>
+        {!username ? (
+          <Link
+            href="/claim-username"
+            className="mt-3 inline-flex min-h-10 items-center justify-center rounded-full bg-[#ccff00] px-4 text-xs font-black text-black transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-[#ccff00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#171819]"
+          >
+            Claim username
+          </Link>
+        ) : null}
         <p className="mt-1 text-xs font-medium text-[#B8B8C5]">
           {email || "Universal wallet profile on mom3"}
         </p>
