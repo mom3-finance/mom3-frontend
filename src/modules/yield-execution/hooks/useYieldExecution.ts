@@ -7,7 +7,6 @@ import type { AiExecutionIntent } from "@/modules/ai/types/ai.types";
 import { isTransactionQuoteExpired } from "@/modules/send/utils/send.utils";
 import type { YieldAction } from "@/modules/yield-execution/types/yield-execution.types";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
-import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 import { syncHistory } from "@/modules/history/api/history.api";
 
 function particleTokenType(symbol: string): SUPPORTED_TOKEN_TYPE | null {
@@ -84,7 +83,7 @@ export function useYieldExecution(action: YieldAction) {
           : [],
         transactions: validated.transactions,
       });
-      const nextTransaction = prepareSponsoredTransaction(particleTransaction);
+      const nextTransaction = structuredClone(particleTransaction);
       setIntent(validated);
       setTransaction(nextTransaction);
       setStatus("idle");

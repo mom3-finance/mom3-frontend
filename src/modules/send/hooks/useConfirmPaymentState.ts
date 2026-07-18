@@ -123,17 +123,9 @@ export function useConfirmPaymentState() {
         amount: amount.trim(),
         receiver: recipient.address,
       });
-      // A same-chain transfer must preserve Particle's original transaction
-      // exactly. The SDK already returns the correct UserOperation and root
-      // hash for direct transfers; rebuilding it as a gasless route can turn
-      // an Arb-to-Arb payment into an invalid quote.
-      const transaction = {
-        ...structuredClone(particleTransaction),
-        additionalData: {
-          ...particleTransaction.additionalData,
-          mom3DirectTransfer: true,
-        },
-      };
+      // Preserve Particle's exact quote. The SDK already includes the final
+      // UserOperation, fee route, and root hash for direct transfers.
+      const transaction = structuredClone(particleTransaction);
 
       if (!transaction.transactionId || !transaction.rootHash || transaction.userOps.length === 0) {
         throw new Error("Particle returned an incomplete transfer quote.");

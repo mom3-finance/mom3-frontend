@@ -11,7 +11,6 @@ import {
   createUniversalAccount,
   loadUniversalAccountSnapshot,
 } from "@/providers/universal-account/utils/universal-account.utils";
-import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 import { isTransactionQuoteExpired } from "@/modules/send/utils/send.utils";
 
 type Eip7702Deployment = {
@@ -171,11 +170,10 @@ export function useSignAndSend(
       throw new Error("Universal Account or Magic wallet is not ready.");
     }
 
-    // Normalize the transaction according to the configured gas mode. In
-    // user-paid mode this preserves Particle's default UserOperation.
-    const transactionForSubmit = transaction.additionalData?.mom3DirectTransfer
-      ? structuredClone(transaction)
-      : prepareSponsoredTransaction(transaction);
+    // Particle's SDK already returns the final sponsored/user-paid
+    // UserOperation. Do not rebuild gasless data or rootHash before signing;
+    // the Bundler verifies the signature against this exact quote.
+    const transactionForSubmit = structuredClone(transaction);
 
     if (isTransactionQuoteExpired(transactionForSubmit)) {
       throw new Error("This Particle quote expired before signing. Request a fresh quote and try again.");
@@ -228,12 +226,9 @@ export function useSignAndSend(
         let serialized = nonceMap.get(authKey);
 
         if (!serialized) {
-          // A direct transfer is submitted from the owner EOA. Keep Magic on
-          // the authorization chain so the wallet signs the same network
-          // context that Particle put in the UserOperation.
-          if (transactionForSubmit.additionalData?.mom3DirectTransfer) {
-            await magic.evm.switchChain(authChainId);
-          }
+          // Keep Magic on the authorization chain so the wallet signs the
+          // same network context Particle put in the UserOperation.
+          await magic.evm.switchChain(authChainId);
           const authorization = await signEip7702Auth(
             auth.address,
             authChainId,

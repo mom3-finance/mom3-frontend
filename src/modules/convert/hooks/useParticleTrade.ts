@@ -10,7 +10,6 @@ import {
 import { getSendErrorMessage, isRetryableParticleTransactionError, isTransactionQuoteExpired } from "@/modules/send/utils/send.utils";
 import { useUniversalAccount } from "@/providers/universal-account/components/UniversalAccountProvider";
 import { isParticleExecutionChainId } from "@/providers/shared/constants/chain.constants";
-import { prepareSponsoredTransaction } from "@/providers/universal-account/utils/gas-sponsorship.utils";
 
 export type TradeStatus = "idle" | "preparing" | "signing" | "success" | "error";
 
@@ -55,7 +54,7 @@ export function useParticleTrade() {
           },
           chainId: request.chainId,
         });
-        const nextTransaction = prepareSponsoredTransaction(particleTransaction);
+        const nextTransaction = structuredClone(particleTransaction);
 
         if (
           !nextTransaction.transactionId ||
