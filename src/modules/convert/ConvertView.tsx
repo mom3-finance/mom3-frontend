@@ -126,7 +126,8 @@ export default function ConvertView() {
 
         <fieldset className="space-y-2">
           <Typography as="legend" variant="label" color="muted">Receive on</Typography>
-          <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="min-w-0 touch-pan-x overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max min-w-full gap-2">
             {targetNetworks.map((network) => {
               const isSelected = network.chainId === targetChainId;
 
@@ -148,6 +149,7 @@ export default function ConvertView() {
                 />
               );
             })}
+            </div>
           </div>
         </fieldset>
 
