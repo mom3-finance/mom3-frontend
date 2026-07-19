@@ -211,7 +211,9 @@ export function useConfirmPaymentState() {
       const result = await signAndSend(transactionForSubmit);
       setTransactionId(result.transactionId ?? sendPreview.transaction.transactionId);
       void saveRecentRecipient(accountInfo.ownerAddress, sendPreview.recipient, sendPreview.token.chainId);
-      const account = accountInfo.evmSmartAccount || accountInfo.ownerAddress;
+      const account = sendPreview.token.chainId === CHAIN_ID.SOLANA_MAINNET
+        ? accountInfo.solanaSmartAccount
+        : accountInfo.evmSmartAccount || accountInfo.ownerAddress;
       if (account && universalAccount) {
         void universalAccount.getTransactions(1, 50).then((response: any) => {
           const transactions = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];

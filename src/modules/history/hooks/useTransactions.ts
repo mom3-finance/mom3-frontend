@@ -39,7 +39,8 @@ function normalizeStatus(value: unknown): HistoryStatus {
   const text = String(value ?? "").toLowerCase();
   const numeric = Number(value);
   if ([6, 10, 14].includes(numeric)) return "failed";
-  if ([7, 11].includes(numeric)) return "success";
+  if (numeric === 11) return "refunded";
+  if (numeric === 7) return "success";
   if (/fail|reject|cancel|error/.test(text)) return "failed";
   if (/success|finish|complete|confirm/.test(text)) return "success";
   return "pending";

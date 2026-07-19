@@ -35,10 +35,10 @@ export function AmountInput({
         </span>
       </div>
 
-      <label htmlFor="send-amount" className="mt-5 block text-xs font-black uppercase text-[#77777f]">
-        Amount
+      <label htmlFor="send-amount" className="mt-8 block text-center text-xs font-black uppercase tracking-[0.14em] text-[#77777f]">
+        You send
       </label>
-      <div className="mt-2 flex h-16 items-center gap-3 rounded-[22px] bg-black/25 px-4 transition-shadow focus-within:ring-2 focus-within:ring-[#3B33BD]">
+      <div className="relative mt-3 flex min-h-28 items-center justify-center gap-2 rounded-[26px] bg-black/25 px-3 transition-shadow focus-within:ring-2 focus-within:ring-[#3B33BD]">
         <input
           id="send-amount"
           type="text"
@@ -48,8 +48,9 @@ export function AmountInput({
           placeholder="0.00"
           aria-invalid={amountValidationMessage ? "true" : undefined}
           aria-describedby={amountValidationMessage ? "send-amount-error" : undefined}
-          className="min-w-0 flex-1 bg-transparent text-3xl font-black text-white placeholder:text-[#66666D] focus:outline-none"
+          className="min-w-0 max-w-[78%] bg-transparent text-center font-mono text-[clamp(2.75rem,14vw,4.25rem)] font-black leading-none tracking-[-0.06em] tabular-nums text-white placeholder:text-[#66666D] focus:outline-none"
         />
+        <span className="shrink-0 font-mono text-xl font-black text-[#ccff00]">{token.symbol}</span>
         <Button
           type="button"
           onClick={onMaxAmount}
@@ -58,7 +59,7 @@ export function AmountInput({
           color="transparent"
           size="compact"
           rounded="full"
-          className="flex h-10 min-w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 px-3 text-xs font-black text-[#8F89FF] transition-colors hover:bg-[#3B33BD]/30 focus-visible:ring-2 focus-visible:ring-[#3B33BD] disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute bottom-[-20px] right-3 flex h-10 min-w-10 items-center justify-center rounded-full bg-[#3B33BD]/20 px-3 text-xs font-black text-[#8F89FF] transition-colors hover:bg-[#3B33BD]/30 focus-visible:ring-2 focus-visible:ring-[#3B33BD] disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
 

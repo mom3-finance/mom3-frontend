@@ -35,7 +35,7 @@ export async function getHistoryTransactions(account: string, limit = 50, cursor
   if (!response.ok) throw new Error(payload.error || "Unable to load transaction history.");
   return payload as { items: StoredHistoryTransaction[]; nextCursor: string | null };
 }
-export type HistoryStatus = "pending" | "success" | "failed";
+export type HistoryStatus = "pending" | "success" | "failed" | "refunded";
 
 export type StoredHistoryTransaction = {
   transactionId: string;
