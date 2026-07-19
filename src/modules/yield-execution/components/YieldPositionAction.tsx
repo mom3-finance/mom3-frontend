@@ -108,6 +108,10 @@ export function YieldPositionAction({
     ? Math.max(0, suppliedBalance - numericAmount)
     : suppliedBalance + numericAmount;
 
+  const refreshDetailData = React.useCallback(async () => {
+    await Promise.all([refreshPosition(), onRefresh()]);
+  }, [onRefresh, refreshPosition]);
+
   const resetFlow = React.useCallback(() => {
     resetSupply();
     resetWithdraw();
@@ -116,14 +120,11 @@ export function YieldPositionAction({
   }, [resetSupply, resetWithdraw]);
 
   React.useEffect(() => {
-    if (
-      transactionStatus.state !== "completed" ||
-      !transactionId ||
-      refreshedTransactionRef.current === transactionId
-    ) return;
+    const terminalState = ["completed", "failed", "refunded"].includes(transactionStatus.state);
+    if (!terminalState || !transactionId || refreshedTransactionRef.current === transactionId) return;
     refreshedTransactionRef.current = transactionId;
-    void Promise.all([refreshPosition(), onRefresh()]);
-  }, [onRefresh, refreshPosition, transactionId, transactionStatus.state]);
+    void refreshDetailData();
+  }, [refreshDetailData, transactionId, transactionStatus.state]);
 
   React.useEffect(() => {
     if (!mode) return;
@@ -233,8 +234,13 @@ export function YieldPositionAction({
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!validAmount) return;
-    if (transaction) await active.execute();
-    else await active.prepare(marketId, amount, chainId);
+    if (transaction) {
+      const submittedId = await active.execute();
+      if (!submittedId) await refreshDetailData();
+    } else {
+      const prepared = await active.prepare(marketId, amount, chainId);
+      if (!prepared) await refreshDetailData();
+    }
   }
 
   function pressAmountKey(key: AmountKeypadKey) {
