@@ -137,19 +137,9 @@ export function useConfirmPaymentState() {
     prepareInFlightRef.current = true;
     setError(null);
     setNotice(null);
+    setSendStatus("preparing");
 
     try {
-      // BNB Chain quotes can include an inline EIP-7702 authorization. Make
-      // the one-time delegation explicit first so Particle simulates the
-      // transfer against the delegated account instead of retrying a stale,
-      // non-delegated BSC UserOperation.
-      if (requestToken.chainId === BSC_MAINNET_CHAIN_ID) {
-        setSendStatus("delegating");
-        await ensureDelegated(BSC_MAINNET_CHAIN_ID);
-        await refreshAccount();
-      }
-
-      setSendStatus("preparing");
       const particleTransaction = await universalAccount.createTransferTransaction({
         token: {
           chainId: requestToken.chainId,
@@ -188,8 +178,6 @@ export function useConfirmPaymentState() {
     amount,
     numericAmount,
     amountValidationMessage,
-    ensureDelegated,
-    refreshAccount,
   ]);
 
   React.useEffect(() => {
@@ -217,8 +205,26 @@ export function useConfirmPaymentState() {
     submitInFlightRef.current = true;
     setError(null);
     setNotice(null);
+    let isBscDelegationStep = false;
 
     try {
+      // The upgrade is a real Type-4 wallet transaction, so only request it
+      // after the user presses Confirm Payment. A newly delegated BSC wallet
+      // must receive a fresh quote before its transfer can be signed.
+      if (sendPreview.token.chainId === BSC_MAINNET_CHAIN_ID) {
+        isBscDelegationStep = true;
+        setSendStatus("delegating");
+        const delegatedNow = await ensureDelegated(BSC_MAINNET_CHAIN_ID);
+        isBscDelegationStep = false;
+        if (delegatedNow) {
+          setSendPreview(null);
+          await refreshAccount();
+          await prepareTransaction();
+          setNotice("BNB Chain wallet upgrade is complete. Review the refreshed transaction details before confirming.");
+          return;
+        }
+      }
+
       setSendStatus("signing");
       // Particle injects signatures into the transaction object before submit.
       // Keep React state immutable so a retry never resubmits a mutated quote.
@@ -237,7 +243,7 @@ export function useConfirmPaymentState() {
       }
       void refreshAccount();
     } catch (cause) {
-      if (isRetryableParticleTransactionError(cause)) {
+      if (!isBscDelegationStep && isRetryableParticleTransactionError(cause)) {
         setSendPreview(null);
         // Never prepare a replacement quote from a stale balance snapshot.
         await refreshAccount();
