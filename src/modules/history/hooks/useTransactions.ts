@@ -82,7 +82,7 @@ function summarizeTransaction(raw: any, account = ""): RealHistoryItem {
     ? { ...raw.change, token: raw.targetToken }
     : Array.isArray(changes) ? changes[0] : undefined;
   const amountIn = Math.abs(Number(firstChange?.amountInUSD ?? raw?.amountInUSD ?? 0) || 0);
-  const symbol = String(firstChange?.token?.symbol || firstChange?.token?.type || "");
+  const symbol = String(firstChange?.token?.symbol || firstChange?.token?.type || raw?.targetToken?.symbol || raw?.targetToken?.type || "");
   const decimals = Number(firstChange?.token?.realDecimals ?? firstChange?.token?.decimals ?? 18);
   const rawAmount = Math.abs(Number(firstChange?.amount ?? 0) || 0);
   const amountNum = typeof rawAmount === "number" && Number.isInteger(rawAmount) && Math.abs(rawAmount) >= 10 ** decimals
@@ -94,7 +94,12 @@ function summarizeTransaction(raw: any, account = ""): RealHistoryItem {
     || (amountIn > 0 && Number(firstChange?.amount ?? 0) > 0);
   const isSend = String(firstChange?.from || "").toLowerCase() === account.toLowerCase();
   const isConvert = String(raw?.tag || raw?.type || raw?.action || "").toLowerCase().includes("convert");
-  const action: HistoryTransactionType = isReceive ? "receive" : isSend ? "send" : isConvert ? "convert" : "transaction";
+  const rawAction = String(raw?.action || raw?.type || raw?.transactionType || "").toLowerCase();
+  const action: HistoryTransactionType = /supply|deposit|stake|lend/.test(rawAction)
+    ? "supply"
+    : /withdraw|redeem|unstake/.test(rawAction)
+      ? "withdraw"
+      : isReceive ? "receive" : isSend ? "send" : isConvert ? "convert" : "transaction";
   const presentation = presentationFor(action);
   const amount = amountNum
     ? `${isReceive ? "+" : ""}${amountNum.toFixed(4)} ${symbol}`
@@ -107,8 +112,8 @@ function summarizeTransaction(raw: any, account = ""): RealHistoryItem {
 
   return {
     id,
-    title: isReceive ? "Deposit received" : isSend ? "Sent asset" : isConvert ? "Asset converted" : "Transaction",
-    description: raw?.targetToken?.symbol ? `${raw.targetToken.symbol} · ${network}` : network,
+    title: action === "supply" ? `Supplied to ${raw?.protocol || "yield market"}` : action === "withdraw" ? `Withdrawn from ${raw?.protocol || "yield market"}` : isReceive ? "Deposit received" : isSend ? "Sent asset" : isConvert ? "Asset converted" : "Transaction",
+    description: symbol ? `${symbol} · ${network}` : network,
     amount,
     time: relativeTime(raw?.createdAt || raw?.timestamp || raw?.time),
     status,

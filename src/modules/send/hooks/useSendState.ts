@@ -136,15 +136,26 @@ export function useSendState(
   /* â”€â”€ Filtered recipients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
   const filteredRecipients = React.useMemo(() => {
-    if (!query.trim()) return recentRecipients;
-
-    const combined = recentRecipients.filter(
-      (recipient, index, self) =>
-        index === self.findIndex((item) => item.address === recipient.address),
+    const recipientKey = (recipient: Recipient) => {
+      const handle = recipient.handle.trim().replace(/^@/, "").toLowerCase();
+      return handle && handle !== recipient.address.trim().toLowerCase()
+        ? `username:${handle}`
+        : `address:${recipient.address.trim().toLowerCase()}`;
+    };
+    const uniqueByRecipient = (items: Recipient[]) => items.filter(
+      (recipient, index, self) => index === self.findIndex((item) => recipientKey(item) === recipientKey(recipient)),
     );
+
+    if (!query.trim()) return uniqueByRecipient(recentRecipients);
+
+    const combined = uniqueByRecipient(recentRecipients);
     const filtered = combined.filter((recipient) => matchesRecipient(recipient, query));
 
-    if (usernameRecipient.length > 0) return [...usernameRecipient, ...filtered.filter((item) => !usernameRecipient.some((username) => item.address === username.address))];
+    if (usernameRecipient.length > 0) {
+      const usernameResults = uniqueByRecipient(usernameRecipient);
+      const usernameKeys = new Set(usernameResults.map(recipientKey));
+      return [...usernameResults, ...filtered.filter((item) => !usernameKeys.has(recipientKey(item)))];
+    }
     if (filtered.length > 0) return filtered;
 
     const resolved = resolveRecipient(query, recentRecipients);
