@@ -25,6 +25,8 @@ import { syncHistory } from "@/modules/history/api/history.api";
 import { resolveUsername } from "@/modules/username/utils/username.api";
 import { formatUsername } from "@/lib/username";
 
+const BSC_MAINNET_CHAIN_ID = 56;
+
 export function useConfirmPaymentState() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -43,6 +45,7 @@ export function useConfirmPaymentState() {
     error: accountError,
     refreshAccount,
     signAndSend,
+    ensureDelegated,
   } = useUniversalAccount();
 
   const [sendStatus, setSendStatus] = React.useState<SendStatus>("idle");
@@ -134,9 +137,19 @@ export function useConfirmPaymentState() {
     prepareInFlightRef.current = true;
     setError(null);
     setNotice(null);
-    setSendStatus("preparing");
 
     try {
+      // BNB Chain quotes can include an inline EIP-7702 authorization. Make
+      // the one-time delegation explicit first so Particle simulates the
+      // transfer against the delegated account instead of retrying a stale,
+      // non-delegated BSC UserOperation.
+      if (requestToken.chainId === BSC_MAINNET_CHAIN_ID) {
+        setSendStatus("delegating");
+        await ensureDelegated(BSC_MAINNET_CHAIN_ID);
+        await refreshAccount();
+      }
+
+      setSendStatus("preparing");
       const particleTransaction = await universalAccount.createTransferTransaction({
         token: {
           chainId: requestToken.chainId,
@@ -175,6 +188,8 @@ export function useConfirmPaymentState() {
     amount,
     numericAmount,
     amountValidationMessage,
+    ensureDelegated,
+    refreshAccount,
   ]);
 
   React.useEffect(() => {
