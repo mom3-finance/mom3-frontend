@@ -7,7 +7,7 @@ import type { YieldPosition } from "@/modules/yield-execution/types/yield-execut
 export function useYieldPosition(marketId?: string, account?: string | null, chainId?: number) {
   const query = useQuery<YieldPosition>({
     queryKey: ["yield-position", marketId || null, account || null, chainId || null],
-    enabled: Boolean(marketId && account && chainId !== 101),
+    enabled: Boolean(marketId && account && chainId),
     queryFn: async () => {
       const params = new URLSearchParams({ account: account as string });
       const response = await fetch(`/api/ai/markets/${encodeURIComponent(marketId as string)}/position?${params}`, { cache: "no-store" });

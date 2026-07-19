@@ -4,7 +4,10 @@ import {
   UniversalAccount,
 } from "@particle-network/universal-account-sdk";
 
-import { DEFAULT_CHAIN_ID } from "@/providers/shared/constants/chain.constants";
+import {
+  DEFAULT_CHAIN_ID,
+  PARTICLE_EVM_CHAIN_IDS,
+} from "@/providers/shared/constants/chain.constants";
 import type {
   UniversalAccountSnapshot,
 } from "@/providers/universal-account/types/universal-account.types";
@@ -54,13 +57,45 @@ export async function loadUniversalAccountSnapshot(
   ]);
 
   const deployments = Array.isArray(rawDeployments) ? rawDeployments : [];
-  const eip7702Deployments = (deployments as Array<{
+  const deploymentRows = deployments as Array<{
     chainId?: number | string;
     chain_id?: number | string;
     delegationAddress?: string;
     delegation_address?: string;
     isDelegated?: boolean;
-  }>).map((deployment) => ({
+  }>;
+
+  // The deployments endpoint can contain only chains whose status has already
+  // been refreshed. Build the UI from the SDK-supported EVM chains as well and
+  // resolve the authorization address for missing rows.
+  const deploymentByChain = new Map(
+    deploymentRows.map((deployment) => [
+      Number(deployment.chainId ?? deployment.chain_id ?? 0),
+      deployment,
+    ]),
+  );
+  const supportedChains = Array.from(
+    new Set([...deploymentByChain.keys(), ...PARTICLE_EVM_CHAIN_IDS]),
+  ).filter((chainId) => chainId > 0);
+  const missingAuthorizationRows = await Promise.all(
+    supportedChains
+      .filter((chainId) => !deploymentByChain.has(chainId))
+      .map(async (chainId) => {
+        try {
+          const [auth] = (await universalAccount.getEIP7702Auth([chainId])) as Array<{
+            address?: string;
+          }>;
+          return [chainId, { chainId, delegationAddress: auth?.address || "0x" }] as const;
+        } catch {
+          return [chainId, { chainId, delegationAddress: "0x" }] as const;
+        }
+      }),
+  );
+  for (const [chainId, deployment] of missingAuthorizationRows) {
+    deploymentByChain.set(chainId, deployment);
+  }
+
+  const eip7702Deployments = Array.from(deploymentByChain.values()).map((deployment) => ({
     chainId: Number(deployment.chainId ?? deployment.chain_id ?? 0),
     delegationAddress: String(
       deployment.delegationAddress ?? deployment.delegation_address ?? "0x",
