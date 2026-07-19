@@ -144,7 +144,8 @@ export function YieldPositionAction({
   if (transactionId) {
     const failed = transactionStatus.state === "failed";
     const completed = transactionStatus.state === "completed";
-    const status = completed ? "Completed" : failed ? "Failed" : transactionStatus.state === "confirming" ? "Confirming" : "Submitted";
+    const refunded = transactionStatus.state === "refunded";
+    const status = completed ? "Completed" : refunded ? "Refunded" : failed ? "Failed" : transactionStatus.state === "confirming" ? "Confirming" : "Submitted";
     return (
       <motion.section initial={{ y: reduceMotion ? 0 : "100%" }} animate={{ y: 0 }} transition={transition} className="fixed inset-0 z-[70] overflow-y-auto bg-black" role="status" aria-label={`${receiptMode} transaction receipt`}>
         <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-5 pt-4 pb-[calc(24px+env(safe-area-inset-bottom))]">
@@ -160,7 +161,7 @@ export function YieldPositionAction({
               {failed ? "Transaction failed" : completed ? `${receiptMode === "supply" ? "Supply" : "Withdrawal"} complete` : `${receiptMode === "supply" ? "Supply" : "Withdrawal"} submitted`}
             </Typography>
             <Typography variant="body-sm" color="muted" align="center" className="mt-1.5">
-              {failed ? "No confirmed position change was recorded." : completed ? "Your on-chain position has been updated." : "Particle is confirming your transaction."}
+              {failed ? "No confirmed position change was recorded." : refunded ? "The transaction was refunded. No position change was recorded." : completed ? "Your on-chain position has been updated." : "Particle is confirming your transaction."}
             </Typography>
           </div>
           <div className="mt-5 rounded-[20px] bg-[#111217] p-4">

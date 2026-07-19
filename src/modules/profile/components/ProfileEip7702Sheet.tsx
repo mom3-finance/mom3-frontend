@@ -95,12 +95,11 @@ export function ProfileEip7702Sheet({
         <div className="space-y-2" aria-label="EIP-7702 compatible chains">
           {deployments.map((deployment) => {
             const isPending = activeChainId === deployment.chainId;
-            const canDelegate =
-              deployment.chainId !== 101 &&
-              Boolean(
-                deployment.delegationAddress &&
-                  deployment.delegationAddress.toLowerCase() !== "0x",
-              );
+            // The deployment list is a status cache. A missing delegation
+            // address does not mean this EVM chain is unsupported; the
+            // delegate mutation obtains the authoritative address and nonce
+            // from getEIP7702Auth when the user clicks.
+            const canDelegate = deployment.chainId !== 101;
             const chainName = chainNameFromId(deployment.chainId);
             return (
               <div key={deployment.chainId} className="flex min-h-[72px] items-center gap-3 rounded-2xl bg-black/25 px-3 py-2.5">

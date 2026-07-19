@@ -10,6 +10,7 @@ export type UniversalTransactionState =
   | "submitted"
   | "confirming"
   | "completed"
+  | "refunded"
   | "failed";
 
 type ParticleTransactionStatus = {
@@ -35,14 +36,19 @@ export function getUniversalTransactionState(
     return "failed";
   }
 
-  if (
-    status === UA_TRANSACTION_STATUS.FINISHED ||
-    status === UA_TRANSACTION_STATUS.REFUND_FINISHED
-  ) {
+  if (status === UA_TRANSACTION_STATUS.FINISHED) {
     return "completed";
   }
 
-  if (status === null || status === UA_TRANSACTION_STATUS.INITIALIZING) {
+  if (status === UA_TRANSACTION_STATUS.REFUND_FINISHED) {
+    return "refunded";
+  }
+
+  if (
+    status === null ||
+    status === UA_TRANSACTION_STATUS.INITIALIZING ||
+    !Object.values(UA_TRANSACTION_STATUS).includes(status as UA_TRANSACTION_STATUS)
+  ) {
     return "submitted";
   }
 
@@ -64,7 +70,7 @@ export function useUniversalTransactionStatus(transactionId?: string | null) {
       const state = getUniversalTransactionState(
         currentQuery.state.data as ParticleTransactionStatus | null | undefined,
       );
-      return state === "completed" || state === "failed" ? false : 3_000;
+      return state === "completed" || state === "refunded" || state === "failed" ? false : 3_000;
     },
     refetchOnWindowFocus: "always",
     refetchOnReconnect: "always",

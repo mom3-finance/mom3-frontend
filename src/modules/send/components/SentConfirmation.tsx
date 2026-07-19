@@ -34,6 +34,8 @@ export function SentConfirmation({
   const statusLabel =
     transactionStatus.state === "completed"
       ? "Completed"
+      : transactionStatus.state === "refunded"
+        ? "Refunded"
       : transactionStatus.state === "failed"
         ? "Failed"
         : transactionStatus.state === "confirming"
@@ -57,6 +59,8 @@ export function SentConfirmation({
         <Typography variant="body-sm" color="muted" align="center" className="mt-2 max-w-xs">
           {transactionStatus.state === "completed"
             ? "Your payment has been confirmed."
+            : transactionStatus.state === "refunded"
+              ? "The transaction was refunded. No payment was completed."
             : transactionStatus.state === "failed"
               ? "The transaction could not be completed. Open the activity details for more information."
               : "Your payment was sent and is being confirmed."}

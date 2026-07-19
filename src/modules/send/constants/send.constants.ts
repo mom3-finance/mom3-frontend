@@ -34,4 +34,13 @@ export const receiveTokenTemplates: Array<
     tokenAddress: ZERO_ADDRESS,
     isSuggested: true,
   },
+  {
+    symbol: "BNB",
+    name: "BNB",
+    icon: "cryptocurrency-color:bnb",
+    chainName: "BNB Chain",
+    chainId: 56,
+    tokenAddress: ZERO_ADDRESS,
+    isSuggested: true,
+  },
 ];

@@ -1,6 +1,7 @@
 "use client";
 
 import { AppIcon } from "@/components/ui/app-icon";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -24,6 +25,7 @@ export default function SendView() {
   const from = searchParams.get("from") === "dashboard" ? "dashboard" : "assets";
 
   const state = useSendState(initialTo, initialAsset, initialChain, initialAmount);
+  const reduceMotion = useReducedMotion();
   const [tokenQuery, setTokenQuery] = React.useState("");
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
@@ -125,7 +127,14 @@ export default function SendView() {
               </div>
             </div>
           ) : state.step === "amount" && state.selectedToken ? (
-            <form onSubmit={handleSend} className="mt-5 rounded-[28px] bg-[#111217] p-4">
+            <motion.form
+              key={`${state.selectedToken.id}-${state.step}`}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 34 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { type: "spring", damping: 28, stiffness: 260 }}
+              onSubmit={handleSend}
+              className="mt-5 rounded-[28px] bg-[#111217] p-4"
+            >
               <AmountInput
                 token={state.selectedToken}
                 amount={state.amount}
@@ -170,7 +179,7 @@ export default function SendView() {
                 fullWidth
                 size="lg"
               />
-            </form>
+            </motion.form>
           ) : null}
         </section>
       ) : (

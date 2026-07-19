@@ -76,30 +76,36 @@ export function useConfirmPaymentState() {
   );
 
   const [recipient, setRecipient] = React.useState<Recipient | null>(null);
+  const [isResolvingRecipient, setIsResolvingRecipient] = React.useState(Boolean(to));
 
   React.useEffect(() => {
     let cancelled = false;
+    setIsResolvingRecipient(Boolean(to));
+    setRecipient(null);
     const isUsernameLookup = to.trim().startsWith("@");
     if (isUsernameLookup && selectedToken) {
       void resolveUsername(to.trim(), selectedToken.chainId).then((identity) => {
-        const chainAddress = identity.addresses?.[String(selectedToken.chainId)] || identity.address;
+        const chainAddress = identity.addresses?.[String(selectedToken.chainId)]
+          || (selectedToken.chainId === CHAIN_ID.SOLANA_MAINNET ? null : identity.address);
         if (!cancelled && chainAddress) setRecipient({ id: identity.username, handle: formatUsername(identity.username) || identity.username, name: "mom3 user", address: chainAddress, network: selectedToken.chainName, status: "Verified", color: "from-[#3B33BD] to-[#7E78EA]", avatarUrl: identity.avatar_url });
-      }).catch(() => { if (!cancelled) setError("Username was not found on the selected chain."); });
+      }).catch(() => { if (!cancelled) setError("Username was not found on the selected chain."); })
+        .finally(() => { if (!cancelled) setIsResolvingRecipient(false); });
     }
     if (isUsernameLookup) {
       return () => { cancelled = true; };
     }
-    void getRecentRecipients(accountInfo.ownerAddress)
+      void getRecentRecipients(accountInfo.ownerAddress)
       .catch(() => [])
       .then((recentRecipients) => {
         if (cancelled) return;
         const resolved = resolveRecipient(to, recentRecipients);
         if (resolved) setRecipient(resolved);
-      });
+      })
+      .finally(() => { if (!cancelled) setIsResolvingRecipient(false); });
     return () => {
       cancelled = true;
     };
-  }, [accountInfo.ownerAddress, selectedToken, to]);
+  }, [accountInfo.ownerAddress, selectedToken?.chainId, to]);
 
   const prepareTransaction = React.useCallback(async () => {
     if (!universalAccount || !recipient || !selectedToken) return;
@@ -205,7 +211,9 @@ export function useConfirmPaymentState() {
       const result = await signAndSend(transactionForSubmit);
       setTransactionId(result.transactionId ?? sendPreview.transaction.transactionId);
       void saveRecentRecipient(accountInfo.ownerAddress, sendPreview.recipient, sendPreview.token.chainId);
-      const account = accountInfo.evmSmartAccount || accountInfo.ownerAddress;
+      const account = sendPreview.token.chainId === CHAIN_ID.SOLANA_MAINNET
+        ? accountInfo.solanaSmartAccount
+        : accountInfo.evmSmartAccount || accountInfo.ownerAddress;
       if (account && universalAccount) {
         void universalAccount.getTransactions(1, 50).then((response: any) => {
           const transactions = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
@@ -259,7 +267,7 @@ export function useConfirmPaymentState() {
     await prepareTransaction();
   };
 
-  const isReady = Boolean(recipient && selectedToken && !isLoading && !amountValidationMessage);
+  const isReady = Boolean(recipient && selectedToken && !isResolvingRecipient && !isLoading && !amountValidationMessage);
   const isSigning = sendStatus === "signing";
   const isPreparing = sendStatus === "preparing" || sendStatus === "delegating";
 
@@ -269,6 +277,7 @@ export function useConfirmPaymentState() {
     chain,
     amount,
     recipient,
+    isResolvingRecipient,
     selectedToken,
     sendPreview,
     transactionId,

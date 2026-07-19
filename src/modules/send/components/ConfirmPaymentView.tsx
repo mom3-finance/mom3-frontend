@@ -13,6 +13,7 @@ import { SentConfirmation } from "@/modules/send/components/SentConfirmation";
 import { FailedConfirmation } from "@/modules/send/components/FailedConfirmation";
 import { useConfirmPaymentState } from "@/modules/send/hooks/useConfirmPaymentState";
 import { getFeeBreakdownRows, getFeeTokenRows, getTotalFeeLabel } from "@/providers/universal-account/services/gas-fee.service";
+import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 
 export default function ConfirmPaymentView() {
   const state = useConfirmPaymentState();
@@ -102,7 +103,14 @@ export default function ConfirmPaymentView() {
       <section className="mt-5 flex flex-1 flex-col">
         {/* Recipient summary */}
         <div className="rounded-[32px] bg-[#111217] p-5 shadow-[0_12px_44px_-24px_rgba(59,51,189,0.6)]">
-          {state.recipient ? (
+          {state.isResolvingRecipient ? (
+            <div className="py-2" aria-busy="true" role="status">
+              <span className="sr-only">Loading recipient details.</span>
+              <Skeleton className="mx-auto h-24 w-24 rounded-full" />
+              <SkeletonText className="mx-auto mt-4 h-7 w-32" />
+              <SkeletonText className="mx-auto mt-2 h-4 w-44" />
+            </div>
+          ) : state.recipient ? (
             <>
             <WalletAvatar
               address={state.recipient.address}

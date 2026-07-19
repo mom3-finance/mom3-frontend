@@ -63,6 +63,8 @@ export default function ConvertView() {
           <Typography variant="body-sm" color="muted" className="mt-2 max-w-xs">
             {transactionStatus.state === "completed"
               ? `${amount} ${selectedAsset?.symbol ?? "token"} is now confirmed on ${selectedNetwork.label}.`
+              : transactionStatus.state === "refunded"
+                ? "The conversion was refunded. No final conversion was completed."
               : transactionStatus.state === "failed"
                 ? "The conversion could not be completed. Open activity details for more information."
                 : `Your assets are being converted into ${amount} ${selectedAsset?.symbol ?? "token"} on ${selectedNetwork.label}.`}
@@ -70,6 +72,8 @@ export default function ConvertView() {
           <span className="mt-4 rounded-full bg-white/[0.08] px-3 py-1 text-xs font-bold text-white" aria-live="polite">
             {transactionStatus.state === "completed"
               ? "Completed"
+              : transactionStatus.state === "refunded"
+                ? "Refunded"
               : transactionStatus.state === "failed"
                 ? "Failed"
                 : transactionStatus.state === "confirming"
